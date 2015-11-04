@@ -181,7 +181,7 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},Tuple{D
 	for i in settings["constraints"]
 		y = parse(i)
 		y.args[1] = :(x[ $(find(rel_nuclides .== string(y.args[1]) ))  ])
-		y.args[3] *= 10_000
+		y.args[3] *= 100
 		#@addConstraint(m, esc(y)) <---- HERE
 		#Expr(:macrocall,symbol("@addConstraint"), esc(m), y)
 	end
