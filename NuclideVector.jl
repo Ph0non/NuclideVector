@@ -23,14 +23,6 @@ function arr2str(nn::Array{ASCIIString, 1})
 	return nn_str
 end
 
-# function arr2sym(nn::Array{ASCIIString, 1})
-# 	nn_sym = Array(Symbol, length(nn))
-# 	for i=1:length(nn)
-# 		nn_sym[i] = Symbol(nn[i])
-# 	end
-# 	return nn_sym
-# end
-
 function schema2arr(x::DataStreams.Data.Table)
 	y = Array(Any, x.schema.rows, x.schema.cols)
 	for i=1:x.schema.cols
@@ -39,9 +31,9 @@ function schema2arr(x::DataStreams.Data.Table)
 	return y
 end
 
-function get_years()
-	collect(settings["years"][1] : settings["years"][2])
-end
+get_years() = collect(settings["years"][1] : settings["years"][2])
+
+utf2ascii(y::Array{Any,1}) = map( x -> ASCIIString(x), y)
 
 #######################################################
 # database
@@ -54,8 +46,8 @@ const nuclide_names = convert(Array{ASCIIString,1}, query(nvdb, "pragma table_in
 function read_db(nvdb::SQLite.DB, tab::ASCIIString)
 	val = query(nvdb, "select * from " * tab);
 	val_data = schema2arr(val)[:,2:end]
-	nu_name = map( x-> ASCIIString(x), val.schema.header[2:end])
-	path_names = map( x-> ASCIIString(x), val.data[1].values)
+	nu_name = utf2ascii( val.schema.header[2:end] )
+	path_names = utf2ascii( val.data[1].values)
 	NamedArray(val_data, (path_names, nu_name), ("path", "nuclides"))
 end
 
@@ -145,75 +137,83 @@ function get_nv()
 	global rel_nuclides = convert(Array{ASCIIString, 1}, settings["nuclides"]);
 	
 	a, C, f_red, eff_red = decay_correction(nvdb, nuclide_names) |> nuclide_parts |> calc_factors
-	nv = Array(Float64, size(f_red,2), size(a,3)-1)
-	for l = 1:length(get_years())-1 #in get_years() # year
-		 nv[:,l] = solve_nv(l, a, C, f_red, eff_red)
+	(nv = Array(Float64, size(f_red,2), size(a,3)-1); i = 1);
+	for l in get_years()[1:end-1] # year =1:length(get_years())-1
+		 (nv[:, i] = solve_nv(l, a, C, f_red, eff_red); i += 1);
 	end
 	write_result(nv)
 end
 
 function determine_fmx()
+	fmx = Array(Any,2)
 	if (settings["use_fmab"] == "fma")
-		fmx = settings["clearance_paths"][1]["fma"]
+		fmx[1] = utf2ascii( settings["clearance_paths"][1]["fma"]  )
 		(p = 1; q = 1);
 	elseif (settings["use_fmab"] == "fmb")
-		fmx = settings["clearance_paths"][1]["fmb"]
+		fmx[2] = utf2ascii( settings["clearance_paths"][1]["fmb"] )
 		(p = 2; q = 2);
 	elseif (settings["use_fmab"] == "fmab")
-		fmx = unique([settings["clearance_paths"][1]["fma"]; settings["clearance_paths"][1]["fmb"]])
+		fmx[1] = utf2ascii( settings["clearance_paths"][1]["fma"] )
+		fmx[2] = utf2ascii( settings["clearance_paths"][1]["fmb"] )
 		(p = 1; q = 2);
 	else
-		# throw error
+		error("expected 'fma', 'fmb' or 'fmab' in option 'use_fmab'")
 	end
 	return fmx, p, q
+end
+
+function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
+	for constr in settings["constraints"]
+		constr_tmp = split(constr)
+		if constr_tmp[2] == "<="
+			@addConstraint(m, x[find(rel_nuclides .== constr_tmp[1])][1] <= float(constr_tmp[3]) * 100)
+		elseif constr_tmp[2] == ">="
+			@addConstraint(m, x[find(rel_nuclides .== constr_tmp[1])][1] >= float(constr_tmp[3]) * 100)
+		elseif constr_tmp[2] == "=="
+			@addConstraint(m, x[find(rel_nuclides .== constr_tmp[1])][1] == float(constr_tmp[3]) * 100)
+		else
+			error("expected comparison operator (<=, >=, or ==) for constraints")
+		end
+	end
 end
 
 function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},Tuple{Dict{Any,Int64},Dict{ASCIIString,Int64},Dict{Int64,Int64}}},
 				   T2<:NamedArrays.NamedArray{Any,2,Array{Any,2},Tuple{Dict{ASCIIString,Int64},Dict{ASCIIString,Int64}}}}(
 				   l::Int, a::T1, C::T1, f_red::T2, eff_red::T2 )
 	m=Model(solver = CbcSolver());
-	@defVar(m, 0 <= x[1:length(rel_nuclides)] <= 10_000, Int); #≤
+	@defVar(m, 0 ≤ x[1:length(rel_nuclides)] <= 10_000, Int); #≤
+	#@setObjective(m, :Min, -sum( x[ find(rel_nuclides .== "Co60") | find(rel_nuclides .== "Cs137")]) ); 
 	@setObjective(m, :Min, -x[ find(rel_nuclides .== "Co60")][1] 
 						   -x[ find(rel_nuclides .== "Cs137")][1] );
 	@addConstraint(m, sum(x) == 10_000);
 
-	# add user specified constraints
-	for i in settings["constraints"]
-		y = parse(i)
-		y.args[1] = :(x[ $(find(rel_nuclides .== string(y.args[1]) ))  ])
-		y.args[3] *= 100
-		#@addConstraint(m, esc(y)) <---- HERE
-		#Expr(:macrocall,symbol("@addConstraint"), esc(m), y)
+	# add user constraints
+	if typeof(settings["constraints"]) != Void
+		add_user_constraints(m, x)
 	end
 	
 	# Co60-equiv for nv
-	@defExpr(Co60eqnv[p=1:2], sum{eff_red.array[p,i] * x[i], i=1:length(rel_nuclides); eff_red[p,i] != 0}) # ∑
+	@defExpr(Co60eqnv[p=1:2], ∑{eff_red[p,i] * x[i], i=1:length(rel_nuclides); eff_red[p,i] != 0}) # ∑
 	
 	# determine fma / fmb / fmab
 	fmx, p, q = determine_fmx()
 	
 	for r = p:q
 		# lower bound
-		@addConstraint(m, constr[k=1:length(fmx), j=1:size(a,1), h=0:1], 
-							Co60eqnv[r]
-							<= C.array[j, r, l+h] * a.array[j,k,l+h] * sum{f_red.array[k,i] * x[i], i=1:length(rel_nuclides)} )
+		@addConstraint(m, constr_lb[k in fmx[r], j=1:size(a,1), h=0:1], Co60eqnv[r] ≤ C[j,r,l+h] * a[j,k,l+h] * ∑{f_red[k,i] * x[i], i=1:length(rel_nuclides)} )
 		if settings["use_upper_bound"]
 		# upper bound
-			@addConstraint(m, constr[k=1:length(fmx), j=1:size(a,1), h=0:1], 
-								C.array[j, r, l+h] * a.array[j,k,l+h] * sum{f_red.array[k,i] * x[i], i=1:length(rel_nuclides)} 
-								<= settings["upper_bound"] * Co60eqnv[r] )
+			@addConstraint(m, constr_ub[k in fmx[r], j=1:size(a,1), h=0:1], C[j,r,l+h] * a[j,k,l+h] * ∑{f_red[k,i] * x[i], i=1:length(rel_nuclides)} ≤ settings["upper_bound"] * Co60eqnv[r] )
 		end
 	end
-	
-	#@addConstraint(m, fmaconstr[k in fmx, j in allnames(a)[1], h=0:1], lhs[1] <= C[j,1,l+h] * a[j,k,l+h] * sum{f_red[k,i] * x[i], i=1:length(rel_nuclides)} )
 
 	sstatus = solve(m, suppress_warnings=true);
 
 	if (sstatus == :Infeasible)
-		print_with_color(:red, string(get_years()[l]) * " no solution in given bounds\n")
+		print_with_color(:red, string(l) * " no solution in given bounds\n")
 		return zeros(length(x))
 	elseif sstatus == :Optimal
-		print_with_color(:green, string(get_years()[l]) * " solution found.\n")
+		print_with_color(:green, string(l) * " solution found.\n")
 		return round(getValue(x)./100, 2)
 	else
 		print("Something weird happen! sstatus = " * string(sstatus) *"\n")
