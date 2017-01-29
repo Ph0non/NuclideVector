@@ -1,0 +1,45 @@
+import QtQuick 2.7
+import QtQuick.Window 2.2
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.1
+import org.julialang 1.0
+
+GroupBox {
+    id: shownv
+    title: "Nuklidvektor"
+    Layout.preferredWidth: area.width
+
+    ColumnLayout {
+
+        TableView {
+            id: view
+            height: 400
+            Layout.preferredWidth: area.width - 15
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            model: nuclidesModel
+
+
+            resources:
+            {
+                var columns = []
+                columns.push(columnComponent.createObject(view, { "role": "name", "title": "Nuklid", "width": 100 }))
+                for(var i=0; i<years.length; i++)
+                {
+                    var role  = years[i]
+                    columns.push(columnComponent.createObject(view, { "role": role, "title": role}))
+                }
+                return columns
+            }
+        }
+
+     Component
+    {
+        id: columnComponent
+        TableViewColumn { width: 60 }
+    }
+
+    }
+
+}
