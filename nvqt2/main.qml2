@@ -1,0 +1,857 @@
+import QtQuick 2.7
+import QtQuick.Window 2.2
+import QtQuick.Controls 1.4
+import QtQuick.Layouts 1.1
+import org.julialang 1.0
+import QtQuick.LocalStorage 2.0 as Storage
+import Qt.labs.settings 1.0
+import QtQuick.Controls.Private 1.0
+import "underscore.js" as Underscore
+
+ApplicationWindow {
+    visible: true
+    width: 1200
+    height: 700
+    title: qsTr("Nuklidvektor berechnen")
+    id: mainWindow
+
+    function itemIndex(item) {
+        if (item.parent === null)
+            return -1
+        var siblings = item.parent.children
+        for (var i = 0; i<= siblings.length; i++)
+            if (siblings[i] === item)
+                return i
+        return -1
+    }
+    function nextItem(item, offset) {
+        if (item.parent === null)
+            return null
+
+        var index = itemIndex(item)
+        var siblings = item.parent.children
+
+        //return (index < siblings.length -1) ? siblings[index + offset] : null
+        return siblings[index + offset]
+    }
+    function firstItem(item) {
+        if (item.parent === null)
+            return null
+
+        var index = itemIndex(item)
+        var siblings = item.parent.children
+
+        //return (index < siblings.length -1) ? siblings[index + offset] : null
+        return siblings[0]
+    }
+
+    property variant win
+    property variant win2
+    property variant win3
+    property int nuclide_name_length: 70
+
+    MouseArea {
+        id: area
+        anchors.rightMargin: 0
+        anchors.bottomMargin: 0
+        anchors.leftMargin: 0
+        anchors.topMargin: 0
+        anchors.fill: parent
+
+        /////////////////////////////////////
+        //       HERE COMES THE CODE       //
+        /////////////////////////////////////
+
+        ColumnLayout {
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
+            anchors.top: parent.top
+            anchors.topMargin: 0
+            spacing: 0
+
+            //////////////////////////////////////
+            ///// General ////////////////////////
+            //////////////////////////////////////
+
+            GroupBox {
+                id: general
+
+                //    style: Style {
+                //        property Component panel: Rectangle {
+                //            Text {
+                //                anchors.horizontalCenter: parent.horizontalCenter
+                //                anchors.bottom: parent.top
+                //                text: control.title
+                //                renderType: Text.NativeRendering
+                //                font.weight: Font.bold
+                //                font.pointSize: 18
+                //                color: "black"
+                //            }
+                //        }
+                //    }
+                title: qsTr("Allgemeine Einstellungen")
+
+                Layout.preferredWidth: area.width
+
+                RowLayout {
+                    anchors.top: parent.top
+                    anchors.topMargin: 0
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    ColumnLayout {
+                        ///////////////
+                        // 1. Spalte //
+                        ///////////////
+
+                        //////////////
+                        // 1. Zeile //
+                        //////////////
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                            Layout.fillWidth: true
+                            GroupBox {
+                                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                Layout.fillWidth: true
+                                title: "Nuklidvektor"
+                                ComboBox {
+                                    id: comboBox_select_nv
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    clip: false
+                                    model: nv_list
+                                    onCurrentTextChanged: {
+                                        Julia.get_genSettings_name(comboBox_select_nv.currentText)
+                                        //Julia.decay_gui(comboBox_select_nv.currentText, false)
+                                    }
+                                }
+                            }
+
+                            GroupBox {
+                                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                Layout.fillWidth: true
+                                title: "Zeitraum"
+
+                                RowLayout {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    TextField {
+                                        id: year1
+                                        text: qsTr(year1_ctx)
+                                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                        inputMask: qsTr("0000")
+                                        placeholderText: qsTr("2016")
+                                        onTextChanged: {
+                                            Julia.get_genSettings_year( [text, nextItem(this, 2).text] )
+                                            //Julia.decay_gui(comboBox_select_nv.currentText, false)
+                                        }
+                                    }
+
+                                    Text {
+                                        text: "bis"
+                                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                    }
+
+                                    TextField {
+                                        id: year2
+                                        text: qsTr(year2_ctx)
+                                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                        inputMask: "0000"
+                                        placeholderText: qsTr("2026")
+                                        onTextChanged: {
+                                            Julia.get_genSettings_year( [nextItem(this, -2).text, text] )
+                                            Julia.decay_gui(comboBox_select_nv.currentText, false)
+                                        }
+                                    }
+                                }
+                            }
+
+
+                        }
+                        //////////////
+                        // 2. Zeile //
+                        //////////////
+                        RowLayout {
+                            GroupBox {
+                                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                title: "Freigabeverfahren"
+
+                                Row {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    CheckBox {
+                                        text: "Freimessanlage"
+                                        checked: true
+                                        onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fma", true) : Julia.get_genSettings_co60eq("fma", false)
+                                    }
+
+                                    CheckBox {
+                                        text: "Freimessbereich"
+                                        onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fmb", true) : Julia.get_genSettings_co60eq("fmb", false)
+                                    }
+
+                                    CheckBox {
+                                        text: "in-situ"
+                                        onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("is", true) : Julia.get_genSettings_co60eq("is", false)
+                                    }
+                                }
+
+                            }
+
+                            GroupBox {
+                                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                Layout.fillWidth: true
+                                title: "Optimierungsziel"
+
+                                ComboBox {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    model: ot_list
+                                    onCurrentTextChanged: Julia.get_genSettings_target(currentText)
+                                }
+                            }
+
+                        }
+                    }
+                    ///////////////
+                    // 2. Spalte //
+                    ///////////////
+                    GroupBox {
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        title: qsTr("Freigabepfad")
+
+                        Grid {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            columns: 12
+                            rowSpacing: 10
+
+                            Text {
+                                objectName: "fma"
+                                text: "Freimessanlage"
+                            }
+
+                            Repeater {
+                                id: repeater_fma
+                                model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                                CheckBox {
+                                    text: modelData
+                                    onCheckedChanged: Julia.update_clearance_path(text, checked, firstItem(this).objectName )
+                                }
+                            }
+
+                            Text {
+                                text: "Freimessbereich"
+                                objectName: "fmb"
+                            }
+
+                            Repeater {
+                                id: repeater_fmb
+                                model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                                CheckBox {
+                                    text: modelData
+                                    onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
+                                }
+                            }
+
+                            Text {
+                                text: "in-situ"
+                                objectName: "is"
+                            }
+
+                            Repeater {
+                                id: repeater_is
+                                model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                                CheckBox {
+                                    text: modelData
+                                    onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
+                                }
+                            }
+
+                            Component.onCompleted: {
+                                var idx_fma = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10]
+                                for (var i = 0; i < idx_fma.length; i++)
+                                    repeater_fma.itemAt( idx_fma[i] ).checked = true
+
+                                var idx_fmb = [0, 1, 4, 9, 10]
+                                for (var i = 0; i < idx_fmb.length; i++)
+                                    repeater_fmb.itemAt( idx_fmb[i] ).checked = true
+
+                                var idx_is = [0, 4, 9, 10]
+                                for (var i = 0; i < idx_is.length; i++)
+                                    repeater_is.itemAt( idx_is[i] ).checked = true
+
+                                Julia.decay_gui(comboBox_select_nv.currentText, false)
+                            }
+                        }
+                    }
+                }
+            }
+
+            //////////////////////////////////////
+            ///// Constraints ////////////////////
+            //////////////////////////////////////
+
+            GroupBox {
+                id: constraints
+                title: "Relevante Nuklide und Nebenbedingungen"
+                Layout.preferredWidth: area.width
+                Layout.fillWidth: true
+
+
+                RowLayout {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    GroupBox {
+                        Layout.fillHeight: true
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.fillWidth: true
+                        title: "alpha"
+
+                        Column {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Repeater {
+                                model: [ "U234", "U235", "U238", "Pu238", "Pu239Pu240", "Am241", "Cm242", "Cm244" ]
+
+                                RowLayout {
+                                    CheckBox {
+                                        text: modelData
+                                        Layout.preferredWidth: nuclide_name_length + 25
+                                        onCheckedChanged: {
+                                            for (var i=1; i<=3; i++) (checked == true) ? nextItem(this, i).enabled = true : nextItem(this, i).enabled = false;
+                                            (checked == true) ? Julia.get_rel_nuc(text, nextItem(this, 1).currentText, nextItem(this, 2).text, nextItem(this, 3).text ) : Julia.rm_rel_nuc(text)
+                                        }
+                                    }
+
+                                    ComboBox {
+                                        enabled: false
+                                        Layout.preferredWidth: nuclide_name_length
+                                        model: ["NONE", "<=", "==", ">="]
+                                        onCurrentTextChanged: Julia.get_relation(nextItem(this, -1).text, currentText)
+                                    }
+
+                                    TextField {
+                                        enabled: false
+                                        Layout.preferredWidth: 50
+                                        inputMask: ""
+                                        placeholderText: qsTr("0%")
+                                        onEditingFinished: {
+                                            if (text.length == 0)
+                                                Julia.get_limit(nextItem(this, -2).text, "0")
+                                            else
+                                                Julia.get_limit(nextItem(this, -2).text, text)
+                                        }
+                                    }
+
+                                    TextField {
+                                        enabled: false
+                                        Layout.preferredWidth: 70
+                                        inputMask: ""
+                                        placeholderText: qsTr("Wichtung")
+                                        onEditingFinished: {
+                                            if (text.length == 0)
+                                                Julia.get_weight(nextItem(this, -3).text, "1")
+                                            else
+                                                Julia.get_weight(nextItem(this, -3).text, text)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    GroupBox {
+                        Layout.fillHeight: true
+                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        Layout.fillWidth: true
+                        title: "beta"
+
+                        Column {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Repeater {
+                                model: [ "H3", "Fe55", "Ni59", "Ni63", "Sr90", "Pu241" ]
+
+                                RowLayout {
+                                    CheckBox {
+                                        text: modelData
+                                        Layout.preferredWidth: nuclide_name_length
+                                        onCheckedChanged: {
+                                            for (var i=1; i<=3; i++) (checked == true) ? nextItem(this, i).enabled = true : nextItem(this, i).enabled = false;
+                                            (checked == true) ? Julia.get_rel_nuc(text, nextItem(this, 1).currentText, nextItem(this, 2).text, nextItem(this, 3).text ) : Julia.rm_rel_nuc(text)
+                                        }
+                                    }
+
+                                    ComboBox {
+                                        enabled: false
+                                        Layout.preferredWidth: nuclide_name_length
+                                        model: ["NONE", "<=", "==", ">="]
+                                        onCurrentTextChanged: Julia.get_relation(nextItem(this, -1).text, currentText)
+                                    }
+
+                                    TextField {
+                                        enabled: false
+                                        Layout.preferredWidth: 50
+                                        inputMask: ""
+                                        placeholderText: qsTr("0%")
+                                        onEditingFinished: {
+                                            if (text.length == 0)
+                                                Julia.get_limit(nextItem(this, -2).text, "0")
+                                            else
+                                                Julia.get_limit(nextItem(this, -2).text, text)
+                                        }
+                                    }
+
+                                    TextField {
+                                        enabled: false
+                                        Layout.preferredWidth: 70
+                                        inputMask: ""
+                                        placeholderText: qsTr("Wichtung")
+                                        onEditingFinished: {
+                                            if (text.length == 0)
+                                                Julia.get_weight(nextItem(this, -3).text, "1")
+                                            else
+                                                Julia.get_weight(nextItem(this, -3).text, text)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    GroupBox {
+                        Layout.fillHeight: true
+                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                        Layout.fillWidth: true
+                        title: "gamma"
+
+                        Row {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.rightMargin: 0
+                            Repeater {
+                                model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155"] ]
+                                Column {
+
+                                    Repeater {
+                                        model: modelData
+
+                                        RowLayout {
+                                            CheckBox {
+                                                text: modelData
+                                                Layout.preferredWidth: nuclide_name_length
+                                                onCheckedChanged: {
+                                                    for (var i=1; i<=3; i++) (checked == true) ? nextItem(this, i).enabled = true : nextItem(this, i).enabled = false;
+                                                    (checked == true) ? Julia.get_rel_nuc(text, nextItem(this, 1).currentText, nextItem(this, 2).text, nextItem(this, 3).text ) : Julia.rm_rel_nuc(text)
+                                                }
+                                            }
+
+                                            ComboBox {
+                                                enabled: false
+                                                Layout.preferredWidth: nuclide_name_length
+                                                model: ["NONE", "<=", "==", ">="]
+                                                onCurrentTextChanged: Julia.get_relation(nextItem(this, -1).text, currentText)
+                                            }
+
+                                            TextField {
+                                                enabled: false
+                                                Layout.preferredWidth: 50
+                                                inputMask: ""
+                                                placeholderText: qsTr("0%")
+                                                onEditingFinished: {
+                                                    if (text.length == 0)
+                                                        Julia.get_limit(nextItem(this, -2).text, "0")
+                                                    else
+                                                        Julia.get_limit(nextItem(this, -2).text, text)
+                                                }
+                                            }
+
+                                            TextField {
+                                                enabled: false
+                                                Layout.preferredWidth: 70
+                                                inputMask: ""
+                                                placeholderText: qsTr("Wichtung")
+                                                onEditingFinished: {
+                                                    if (text.length == 0)
+                                                        Julia.get_weight(nextItem(this, -3).text, "1")
+                                                    else
+                                                        Julia.get_weight(nextItem(this, -3).text, text)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+
+            //////////////////////////////////////
+            ///// show NV ////////////////////////
+            //////////////////////////////////////
+
+            GroupBox {
+                id: nuclidevector
+                title: "Nuklidvektor"
+                Layout.preferredWidth: area.width
+
+                ColumnLayout {
+
+
+                    TableView {
+                        id: view
+                        height: 400
+                        Layout.preferredWidth: area.width - 15
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+                        model: nuclidesModel
+
+                        resources:
+                        {
+                            var columns = []
+                            columns.push(columnComponent.createObject(view, { "role": "name", "title": "Nuklid", "width": 100 }))
+                            for(var i=0; i<years.length; i++)
+                            {
+                                var role  = years[i]
+                                columns.push(columnComponent.createObject(view, { "role": role, "title": role}))
+                            }
+                            return columns
+                        }
+                    }
+
+                    Component
+                    {
+                        id: columnComponent
+                        TableViewColumn { width: 60 }
+                    }
+
+                }
+
+            }
+
+            //////////////////////////////////////
+            ///// Overestimation /////////////////
+            //////////////////////////////////////
+
+            Window {
+                width: 800
+                height: 600
+                title: "Überschätzung"
+
+                MouseArea {
+                    anchors.rightMargin: 0
+                    anchors.bottomMargin: 0
+                    anchors.leftMargin: 0
+                    anchors.topMargin: 0
+                    anchors.fill: parent
+
+
+                    Column {
+                        RowLayout {
+                            ComboBox {
+                                id: overestimation_CB_year
+                                model: Qt._.range(parseInt(year1.text), parseInt(year2.text))
+                                onCurrentIndexChanged: Julia.test_nv_gui( overestimation_CB_year.currentText, overestimation_CB_fmx.currentIndex )
+                            }
+                            ComboBox {
+                                id: overestimation_CB_fmx
+                                model: ["Freimessanlage", "Freimessbereich", "in-situ"]
+                                onCurrentIndexChanged: Julia.test_nv_gui( overestimation_CB_year.currentText, overestimation_CB_fmx.currentIndex )
+                            }
+                            Button {
+                                text: qsTr("Kopiere in Zwischenablage")
+                                Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                                Layout.preferredHeight: 40
+                                Layout.preferredWidth: 100
+
+                                onClicked: Julia.copy2clipboard_testnv(overestimation_CB_year.currentText)
+                            }
+                        }
+
+                        Text {
+                            text: "01.01." + overestimation_CB_year.currentText
+                        }
+
+                        TableView {
+                            id: view_overestimate1
+                            height: 250
+                            width: 780
+                            model: sampleModel
+
+                            resources:
+                            {
+                                var columns = []
+                                columns.push(columnComponent_overestimate1.createObject(view_overestimate1, { "role": "name", "title": "Probe", "width": 80 }))
+                                for(var i=0; i<fmx_row.length; i++)
+                                {
+                                    var role  = fmx_row[i]
+                                    columns.push(columnComponent_overestimate1.createObject(view_overestimate1, { "role": role, "title": role}))
+                                }
+                                return columns
+                            }
+
+                        }
+
+                        Component
+                        {
+                            id: columnComponent_overestimate1
+                            TableViewColumn { width: 60 }
+                        }
+
+
+                        Text {
+                            text: "31.12." + overestimation_CB_year.currentText
+                        }
+
+                        TableView {
+                            id: view_overestimate2
+                            height: 250
+                            width: 780
+                            model: sampleModel_eoy
+
+                            resources:
+                            {
+                                var columns = []
+                                columns.push(columnComponent_overestimate2.createObject(view_overestimate2, { "role": "name", "title": "Probe", "width": 80 }))
+                                for(var i=0; i<fmx_row.length; i++)
+                                {
+                                    var role  = fmx_row[i]
+                                    columns.push(columnComponent_overestimate2.createObject(view_overestimate2, { "role": role, "title": role}))
+                                }
+                                return columns
+                            }
+                        }
+
+                        Component
+                        {
+                            id: columnComponent_overestimate2
+                            TableViewColumn { width: 60 }
+                        }
+                    }
+
+                }
+            }
+
+            //////////////////////////////////////
+            ///// Decay //////////////////////////
+            //////////////////////////////////////
+
+            Window {
+                width: 800
+                height: 600
+                title: "Zerfallskorrektur"
+
+                MouseArea {
+                    anchors.rightMargin: 0
+                    anchors.bottomMargin: 0
+                    anchors.leftMargin: 0
+                    anchors.topMargin: 0
+                    anchors.fill: parent
+
+
+                    Column {
+                        RowLayout {
+                            ComboBox {
+                                id: decay_CB_year
+                                model: Qt._.range(parseInt(year1.text), parseInt(year2.text))
+                                onCurrentIndexChanged: Julia.decay_gui( decay_CB_year.currentText, decay_check_rel_nuc.checked )
+
+                                //model: ListModel {
+                                //    id: year_items
+
+                                //}
+                                //Component.onCompleted: {year_items.append({"text": year1.text})}
+                            }
+                            CheckBox {
+                                id: decay_check_rel_nuc
+                                text: "Nur relevante Nuklide anzeigen"
+                                onCheckedChanged: Julia.decay_gui( decay_CB_year.currentText, decay_check_rel_nuc.checked )
+                            }
+                        }
+
+                        Text {
+                            text: "Anteile in Prozent"
+                        }
+
+                        TableView {
+                            id: view_decay
+                            height: 550
+                            width: 780
+                            model: decayModel
+
+                            resources:
+                            {
+                                var columns = []
+                                columns.push(columnComponent_decay.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }))
+                                for(var i=0; i<samples_row.length; i++)
+                                {
+                                    var role  = samples_row[i]
+                                    columns.push(columnComponent_decay.createObject(view_decay, { "role": role, "title": role}))
+                                }
+                                return columns
+                            }
+                        }
+
+                        Component
+                        {
+                            id: columnComponent_decay
+                            TableViewColumn { width: 60 }
+                        }
+
+                    }
+                }
+            }
+
+            //////////////////////////////////////
+            ///// Clearance //////////////////////
+            //////////////////////////////////////
+
+            Window {
+                width: 800
+                height: 600
+                title: "Freigabewerte"
+
+                MouseArea {
+                    anchors.rightMargin: 0
+                    anchors.bottomMargin: 0
+                    anchors.leftMargin: 0
+                    anchors.topMargin: 0
+                    anchors.fill: parent
+
+                    Column {
+
+                        Button {
+                            text: qsTr("Kopiere in Zwischenablage")
+                            Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                            Layout.preferredHeight: 40
+                            Layout.preferredWidth: 100
+
+                            enabled: false
+                            onClicked: {
+                                Julia.copy2clipboard_clearance()
+                            }
+                        }
+
+                        TableView {
+                            id: view_clearance
+                            height: 550
+                            width: 780
+                            model: clearanceModel
+
+                            resources:
+                            {
+                                var columns = []
+                                columns.push(columnComponent_clearance.createObject(view_clearance, { "role": "name", "title": "Pfad", "width": 100 }))
+                                for(var i=0; i<years_clearance.length; i++)
+                                {
+                                    var role  = years_clearance[i]
+                                    columns.push(columnComponent_clearance.createObject(view_clearance, { "role": role, "title": role}))
+                                }
+                                return columns
+                            }
+                        }
+
+                        Component
+                        {
+                            id: columnComponent_clearance
+                            TableViewColumn { width: 60 }
+                        }
+
+                        //   Component.onCompleted: Julia.clearance_gui()
+
+                    }
+                }
+            }
+
+            Row{
+                Button {
+                    text: qsTr("Berechnen")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    enabled: start_cal_ctx_button
+                    onClicked: {
+                        // nuclidesModel.clear()
+                        view.update()
+                        Julia.start_nv_calc()
+                        overestimation_Button.enabled = true
+                        clearance_Button.enabled = true
+                        nv_clipboard.enabled = true
+                    }
+                }
+
+                Button {
+                    id: nv_clipboard
+                    text: qsTr("Kopiere in Zwischenablage")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    enabled: false
+                    onClicked: {
+                        Julia.copy2clipboard_nv()
+                    }
+                }
+
+
+                Button {
+                    id: overestimation_Button
+                    text: qsTr("Zeige Überschätzung")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    enabled: false
+                    onClicked: {
+                        var component = Qt.createComponent("Overestimation.qml")
+                        win = component.createObject(mainWindow)
+                        win.show()
+                        Julia.test_nv_gui("2016", 0)
+                    }
+                }
+
+                Button {
+                    id: clearance_Button
+                    text: qsTr("Zeige Freigabewerte")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    enabled: false
+                    onClicked: {
+                        var component = Qt.createComponent("Clearance.qml")
+                        win = component.createObject(mainWindow)
+                        win.show()
+                        Julia.clearance_gui()
+                    }
+                }
+
+                Button {
+                    text: qsTr("Zeige Zerfallskorrektur")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    onClicked: {
+                        var component = Qt.createComponent("Decay.qml")
+                        win2 = component.createObject(mainWindow)
+                        win2.show()
+                    }
+                }
+            }
+        }
+
+    }
+
+    //    JuliaSignals {
+    //        signal killColumn(int column_val)
+    //        onKillColumn: view.removeColumn(column_val)
+    //    }
+
+}

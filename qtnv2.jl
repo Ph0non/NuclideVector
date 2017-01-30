@@ -1,9 +1,6 @@
 using QML
 using JLD
 
-# qml_engine = init_qmlapplicationengine()
-# load(qml_engine, "nvqt/main.qml");
-
 include("NuclideVector_v4.3_gui.jl")
 # exposed as property
 nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> nable2arr |> vec |> sort
@@ -16,14 +13,14 @@ year2_ctx = "2026"
 
 # get data
 include("nvqt2/getdata.jl")
+# decay
+include("nvqt2/decay.jl")
 # calc nv
 include("nvqt2/calcnv.jl")
 # get relevant nuclides and constraints
 include("nvqt2/constraints.jl")
 # test NV
 include("nvqt2/testnv.jl")
-# decay
-include("nvqt2/decay.jl")
 # clearance
 include("nvqt2/clearance.jl")
 
@@ -46,6 +43,6 @@ function loadData()
 end
 @qmlfunction loadData
 
-@qmlapp "nvqt2/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel
+@qmlapp "nvqt2/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel #years_model
 
 exec()

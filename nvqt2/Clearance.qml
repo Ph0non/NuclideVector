@@ -3,7 +3,6 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
-import "underscore.js" as Underscore
 
 Window {
     width: 800
@@ -34,17 +33,20 @@ Window {
                 width: 780
                 model: clearanceModel
 
-                resources:
-                {
-                    var columns = []
-                    columns.push(columnComponent_clearance.createObject(view_clearance, { "role": "name", "title": "Pfad", "width": 100 }))
-                    for(var i=0; i<years_clearance.length; i++)
-                    {
-                        var role  = years_clearance[i]
-                        columns.push(columnComponent_clearance.createObject(view_clearance, { "role": role, "title": role}))
+                function update_columns() {
+                    while(columnCount != 0) { // remove existing columns first
+                        removeColumn(0);
                     }
-                    return columns
+                    addColumn(columnComponent.createObject(view_clearance, { "role": "name", "title": "Nuklid", "width": 100 }));
+                    for(var i=0; i<years_clearance.length; i++) {
+                        var role = years_clearance[i]
+                        addColumn(columnComponent.createObject(view_clearance, { "role": role, "title": role}))
+                    }
                 }
+
+                 onModelChanged: view_clearance.update_columns()
+
+
             }
 
             Component

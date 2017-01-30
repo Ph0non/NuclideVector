@@ -3,7 +3,6 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
-import "underscore.js" as Underscore
 
 Window {
     width: 800
@@ -23,7 +22,7 @@ Window {
             Row {
                 ComboBox {
                     id: overestimation_CB_year
-                    model: Qt._.range(parseInt(year1_ctx), parseInt(year2_ctx))
+                    model: years_model
                     onCurrentIndexChanged: Julia.test_nv_gui( overestimation_CB_year.currentText, overestimation_CB_fmx.currentIndex )
                 }
                 ComboBox {
@@ -52,17 +51,18 @@ Window {
                 width: 780
                 model: sampleModel
 
-                resources:
-                {
-                    var columns = []
-                    columns.push(columnComponent_overestimate1.createObject(view_overestimate1, { "role": "name", "title": "Probe", "width": 80 }))
-                    for(var i=0; i<fmx_row.length; i++)
-                    {
-                        var role  = fmx_row[i]
-                        columns.push(columnComponent_overestimate1.createObject(view_overestimate1, { "role": role, "title": role}))
+                function update_columns() {
+                    while(columnCount != 0) { // remove existing columns first
+                        removeColumn(0);
                     }
-                    return columns
+                    addColumn(columnComponent.createObject(view_overestimate1, { "role": "name", "title": "Nuklid", "width": 100 }));
+                    for(var i=0; i<fmx_row.length; i++) {
+                        var role = fmx_row[i]
+                        addColumn(columnComponent.createObject(view_overestimate1, { "role": role, "title": role}))
+                    }
                 }
+
+                onModelChanged: view_overestimate1.update_columns()
 
             }
 
@@ -83,17 +83,18 @@ Window {
                 width: 780
                 model: sampleModel_eoy
 
-                resources:
-                {
-                    var columns = []
-                    columns.push(columnComponent_overestimate2.createObject(view_overestimate2, { "role": "name", "title": "Probe", "width": 80 }))
-                    for(var i=0; i<fmx_row.length; i++)
-                    {
-                        var role  = fmx_row[i]
-                        columns.push(columnComponent_overestimate2.createObject(view_overestimate2, { "role": role, "title": role}))
+                function update_columns() {
+                    while(columnCount != 0) { // remove existing columns first
+                        removeColumn(0);
                     }
-                    return columns
+                    addColumn(columnComponent.createObject(view_overestimate2, { "role": "name", "title": "Nuklid", "width": 100 }));
+                    for(var i=0; i<fmx_row.length; i++) {
+                        var role = fmx_row[i]
+                        addColumn(columnComponent.createObject(view_overestimate2, { "role": role, "title": role}))
+                    }
                 }
+
+                onModelChanged: view_overestimate2.update_columns()
             }
 
             Component

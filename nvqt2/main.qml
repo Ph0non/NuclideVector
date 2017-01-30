@@ -3,10 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
-import QtQuick.LocalStorage 2.0 as Storage
-import Qt.labs.settings 1.0
-import QtQuick.Controls.Private 1.0
-import "underscore.js" as Underscore
+
 
 ApplicationWindow {
     visible: true
@@ -109,8 +106,6 @@ ApplicationWindow {
                         model: nuclidesModel
 
                         function update_columns() {
-                            var savedModel = model;
-                            model = null; // avoid model updates during reset
                             while(columnCount != 0) { // remove existing columns first
                                 removeColumn(0);
                             }
@@ -119,26 +114,10 @@ ApplicationWindow {
                                 var role = years[i]
                                 addColumn(columnComponent.createObject(view, { "role": role, "title": role}))
                             }
-                            model = savedModel;
                         }
 
-                        // update on role change
-                        Connections {
-                            target: nuclidesModel
-                            onRolesChanged: view.update_columns()
-                        }
+                        onModelChanged: view.update_columns()
 
-//                        resources:
-//                        {
-//                            var columns = []
-//                            columns.push(columnComponent.createObject(view, { "role": "name", "title": "Nuklid", "width": 100 }))
-//                            for(var i=0; i<years.length; i++)
-//                            {
-//                                var role  = years[i]
-//                                columns.push(columnComponent.createObject(view, { "role": role, "title": role}))
-//                            }
-//                            return columns
-//                        }
 
                         // first time init
                         Component.onCompleted: update_columns()
@@ -175,12 +154,10 @@ ApplicationWindow {
 
                     enabled: start_cal_ctx_button
                     onClicked: {
-                        // nuclidesModel.clear()
                         Julia.start_nv_calc()
                         overestimation_Button.enabled = true
                         clearance_Button.enabled = true
                         nv_clipboard.enabled = true
-                        //view.update_columns()
                     }
                 }
 
@@ -237,14 +214,11 @@ ApplicationWindow {
                     Layout.preferredWidth: 100
 
                     onClicked: {
+                        Julia.decay_gui( "2016", false )
                         var component = Qt.createComponent("Decay.qml")
                         win2 = component.createObject(mainWindow)
                         win2.show()
                     }
-                }
-                Button {
-                    text: "Add column"
-                    onClicked: Julia.append_year()
                 }
             }
         }

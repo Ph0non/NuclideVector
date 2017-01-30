@@ -1,0 +1,27 @@
+# NUCLIDE VECTOR TEST
+
+# nuclide vector
+nv_name : A01
+year : 2016
+use_decay_correction : true
+# fma, fmb and/or is
+use_co60eq : [fma, is]
+
+# nuclide vector
+nuclide_vector :
+  - Co60 = 11.08
+  - Cs137 = 13.55
+  - Ni63 = 69.79
+  - Sr90 = 3.08
+  - Am241 = 2.5
+  
+   
+# additional settings
+clearance_paths : 
+  - fma : [OF, 1a, 2a, 4a, 1b, 2b, 3b, 4b, 5b, 6b_2c]
+    fmb : [OF, 1a, 4a, 5b, 6b_2c]
+    is  : [OF, 4a, 5b, 6b_2c, 3a]
+
+# general
+db_name : nvdb-v2.sqlite
+ref_date : "1 Jan"

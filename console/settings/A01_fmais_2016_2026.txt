@@ -1,0 +1,44 @@
+# nuclide vector
+nv_name : A01
+years : [2016, 2026]
+use_decay_correction : true
+# fma, fmb and/or is
+use_co60eq : [fma, is] # (is weglassen)
+# optimization target (measure / clearance_path [look at "additional settings"])
+ot : meausure
+
+# nuclides to use
+# Co60, Cs137, Am241 and Pu241 must be in this list
+nuclides :
+  - Co60
+  - Cs137
+  - Ni63
+  - Sr90
+  - Pu241
+  - Am241
+
+
+# constraints (in percent)
+constraints :
+#  - Co60 >= 5
+#  - Ni63 <= 70
+#  - Sr90 <= 5
+  - Pu241 = 0
+#  - Am241 <= 3.85
+
+
+# additional settings
+clearance_paths :
+  - fma : [OF, 1a, 2a, 3a, 4a, 1b, 2b, 3b, 4b, 5b, 6b_2c]
+    fmb : [OF, 1a, 4a, 5b, 6b_2c]
+    is  : [OF, 3a, 4a, 5b, 6b_2c]
+
+use_upper_bound : false
+upper_bound : 1.5
+
+# additional weight for Co60 towards Cs137 (optim. target measure)
+co60_weight : 1
+
+# general
+db_name : nvdb-v2.sqlite
+ref_date : "1 Jan"

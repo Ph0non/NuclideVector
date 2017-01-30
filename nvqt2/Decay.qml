@@ -3,7 +3,6 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
-import "underscore.js" as Underscore
 
 Window {
     width: 800
@@ -23,12 +22,7 @@ Window {
             RowLayout {
                 ComboBox {
                     id: decay_CB_year
-                    //model: Qt._.range(parseInt(year1_ctx), parseInt(year2_ctx))
-                    model: ListModel {
-                        id: year_items
-
-                    }
-                    Component.onCompleted: {year_items.append({"text": "2016"})}
+                    model: years_model
 
                     onCurrentIndexChanged: Julia.decay_gui( decay_CB_year.currentText, decay_check_rel_nuc.checked )
                 }
@@ -49,17 +43,30 @@ Window {
                 width: 780
                 model: decayModel
 
-                resources:
-                {
-                    var columns = []
-                    columns.push(columnComponent_decay.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }))
-                    for(var i=0; i<samples_row.length; i++)
-                    {
-                        var role  = samples_row[i]
-                        columns.push(columnComponent_decay.createObject(view_decay, { "role": role, "title": role}))
+//                resources:
+//                {
+//                    var columns = []
+//                    columns.push(columnComponent_decay.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }))
+//                    for(var i=0; i<samples_row.length; i++)
+//                    {
+//                        var role  = samples_row[i]
+//                        columns.push(columnComponent_decay.createObject(view_decay, { "role": role, "title": role}))
+//                    }
+//                    return columns
+//                }
+
+                function update_columns() {
+                    while(columnCount != 0) { // remove existing columns first
+                        removeColumn(0);
                     }
-                    return columns
+                    addColumn(columnComponent.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }));
+                    for(var i=0; i<samples_row.length; i++) {
+                        var role = samples_row[i]
+                        addColumn(columnComponent.createObject(view_decay, { "role": role, "title": role}))
+                    }
                 }
+
+                onModelChanged: view_decay.update_columns()
             }
 
             Component

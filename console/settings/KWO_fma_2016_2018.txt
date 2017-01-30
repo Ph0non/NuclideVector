@@ -1,0 +1,39 @@
+# nuclide vector
+nv_name : KWO
+years : [2016, 2019]
+use_decay_correction : true
+# fma, fmb and/or is
+use_co60eq : [fma]
+
+# nuclides to use
+# Co60, Cs137, Am241 and Pu241 must be in this list 
+nuclides :
+  - Co60
+  - Cs137
+  - Ni63
+  - Sr90
+  - Pu241
+  - Am241
+
+
+# constraints (in percent)
+constraints :
+  - Cs137 <= 5
+  - Ni63 <= 75
+  - Sr90 <= 1
+  - Pu241 = 0
+  - Am241 = 0
+ 
+   
+# additional settings
+clearance_paths : 
+  - fma : [6b_2c]
+    fmb : [OF, 1a, 4a, 5b, 6b_2c]
+    is  : [OF, 4a, 5b, 6b_2c]
+
+use_upper_bound : false
+upper_bound : 1.5
+
+# general
+db_name : nvdb-v2.sqlite
+ref_date : "1 Jan"

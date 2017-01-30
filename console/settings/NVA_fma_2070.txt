@@ -1,0 +1,40 @@
+# nuclide vector
+nv_name : NVA
+years : [2070, 2071]
+use_decay_correction : true
+# fma, fmb and/or is
+use_co60eq : [fma, is]
+ot : measure
+
+# nuclides to use
+# Co60, Cs137, Am241 and Pu241 must be in this list 
+nuclides :
+  - Co60
+  - Cs137
+  - Ni63
+  - Sr90
+  - Pu241
+  - Am241
+
+# constraints (in percent)
+constraints :
+  - Co60 >= 0.1
+  - Ni63 >= 60
+  - Am241 <= 17
+  - Pu241 <= 5
+  - Sr90 <= 2
+
+  
+   
+# additional settings
+clearance_paths : 
+  - fma : [OF, 1a, 2a, 4a, 1b, 2b, 3b, 4b, 5b, 6b_2c]
+    fmb : [OF, 1a, 4a, 5b, 6b_2c]
+    is  : [OF, 4a, 5b, 6b_2c]
+
+use_upper_bound : false
+upper_bound : 3
+
+# general
+db_name : nvdb-v2.sqlite
+ref_date : "1 Jan"

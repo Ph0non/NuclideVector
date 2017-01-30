@@ -14,3 +14,12 @@ QML_IMPORT_PATH =
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    calcnv.jl \
+    clearance.jl \
+    constraints.jl \
+    decay.jl \
+    getdata.jl \
+    main.qml2 \
+    testnv.jl

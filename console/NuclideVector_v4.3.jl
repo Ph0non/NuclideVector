@@ -10,9 +10,6 @@ using ProgressMeter
 #######################################################
 # helper functions
 
-nvdb = SQLite.DB("nvdb-v2.sqlite")
-global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
-
 function travec(x::Array{Date,1})
 	reshape(x, 1, length(x))
 end
@@ -79,8 +76,12 @@ function read_db(nvdb::SQLite.DB, tab::String)
 end
 
 function get_years()
-	# [parse(year1_ctx) : parse(year2_ctx); ] |> sort
-	collect(genSettings.year[1] : genSettings.year[2])  |> sort
+	if "years" in keys(settings)
+		ifelse
+		collect(settings["years"][1] : settings["years"][2])
+	else
+		[settings["year"], settings["year"] + 1]
+	end
 end
 
 reduce_factor(q) = q[:, convert(Array{String, 1}, rel_nuclides)]
@@ -106,7 +107,7 @@ function del_zero_from_table()
 end
 
 function get_sample_info(x::String)
-	nable2arr( schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") ) )
+	nable2arr( schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * settings["nv_name"] *"'") ) )
 end
 
 #######################################################
@@ -121,17 +122,20 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * settings["nv_name"] *"'") |> fill_wzero |> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
-	ref_date = "1 Jan"
-	date_format = Dates.DateFormat("d u");
-	(month_, day_) = Dates.monthday(Dates.DateTime(ref_date, date_format))
+	if settings["use_decay_correction"] == true
+		ref_date = settings["ref_date"]
+		date_format = Dates.DateFormat("d u");
+		(month_, day_) = Dates.monthday(Dates.DateTime(ref_date, date_format))
 
-	tday_raw = travec([Date(years[1], month_, day_):Dates.Year(1):Date(years[end], month_, day_);]) .- sample_date; # calculate difference in days
-	tday = NamedArray(convert(Array{Int64,2}, tday_raw), (NamedArrays.names(samples, 1), years),  ("samples", "years") )
-
+		tday_raw = travec([Date(years[1], month_, day_):Dates.Year(1):Date(years[end], month_, day_);]) .- sample_date; # calculate difference in days
+		tday = NamedArray(convert(Array{Int64,2}, tday_raw), (NamedArrays.names(samples, 1), years),  ("samples", "years") )
+	else
+		tday = NamedArray(zeros(size(sample_view, 1), length(years) ), (NamedArrays.names(samples, 1), years),  ("samples", "years") )
+	end
 
 	samples_korr = NamedArray(Array(Float64, size(tday,1), size(samples,2), size(tday,2)),
 					(NamedArrays.names(samples, 1), nuclide_names, years),
@@ -143,40 +147,6 @@ global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " f
 											(2.^(-tday[:,i].array ./ hl[1,"Pu241"]) - 2.^(-tday[:,i].array ./ hl[1,"Am241"]))
 	end
 
-	# @emit show_progress("Zerfallskorrektur")
-
-	return samples_korr
-end
-
-function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, years::Int64)
-	hl_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names) * " from halflife");
-	hl = NamedArray(schema2arr(hl_raw), ([1], nuclide_names), ("halftime", "nuclides"))
-	## Workaround Typänderung SQLite
-	hl = NamedArray(convert(Array{Float64, 2}, [hl.array[i].value for i = 1:length(hl) ]'), ([1], nuclide_names), ("halftime", "nuclides") )
-
-	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
-	sample_id = get_sample_info("s_id") |> vec
-
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
-
-	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
-
-	ref_date = "1 Jan"
-	date_format = Dates.DateFormat("d u");
-	(month_, day_) = Dates.monthday(Dates.DateTime(ref_date, date_format))
-
-	tday_raw = Date(years, month_, day_) .- sample_date # calculate difference in days
-	tday = NamedArray(convert(Array{Int64,2}, tday_raw), (NamedArrays.names(samples, 1), [years]),  ("samples", "years") )
-
-
-	samples_korr = NamedArray(samples.array .* 2.^(-vec(tday.array) ./ hl),
-					(NamedArrays.names(samples, 1), nuclide_names),
-					("samples", "nuclides") )
-		# Am241 and Pu241 must be in sample nuclide_names
-	samples_korr[:,"Am241"] = Array(samples_korr[:,"Am241"]) + Array(samples[:, "Pu241"]) .*
-														hl[1,"Pu241"]./(hl[1,"Pu241"] - hl[1,"Am241"]) .*
-														(2.^(-vec(tday.array) ./ hl[1,"Pu241"]) - 2.^(-vec(tday.array) ./ hl[1,"Am241"]))
-
 	return samples_korr
 end
 
@@ -187,12 +157,6 @@ function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,3,Array{Floa
 															Tuple{DataStructures.OrderedDict{Int64,Int64},
 															DataStructures.OrderedDict{String,Int64},
 															DataStructures.OrderedDict{Int64,Int64}}})
-	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
-end
-
-function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,Array{Float64,2},
-															Tuple{DataStructures.OrderedDict{Int64,Int64},
-															DataStructures.OrderedDict{String,Int64}}})
 	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
 end
 
@@ -235,10 +199,12 @@ end
 #######################################################
 # solve problem
 
-function get_nv()
-	global rel_nuclides = [rel_nuclides3[i].name for i=1:length(rel_nuclides3) ]
-	global mean_weight = [rel_nuclides3[i].weight for i=1:length(rel_nuclides3) ]
-	global nvdb = SQLite.DB("nvdb-v2.sqlite");
+function get_nv(sf::AbstractString)
+	global settings = YAML.load(open(sf));
+	(rel_nuclides, mean_weight) = get_rel_nuclides_and_weights()
+	global rel_nuclides = rel_nuclides
+	global nvdb = SQLite.DB(settings["db_name"]);
+	global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
 
 	np = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts
 	a, ∑Co60Eq, f, ɛ = np |> calc_factors
@@ -246,30 +212,29 @@ function get_nv()
 	(nv = Array(Float64, length(rel_nuclides), size(a,3)-1); i = 1);
 # @showprogress
 # @progress ["Jahr"]
-
-	ymin = get_years()[1]
-	ymax = get_years()[end-1]
-
-	for l in get_years()[1:end-1] # year =1:length(get_years())-1
-		# @qmlset qmlcontext().progress_val_ctx = (l - ymin)/(ymax - ymin) |> Float32
-			# @emit show_progress(string(l))
-			# @emit progress_value( (l - ymin)/(ymax - ymin) |> Float32 )
-			(nv[:, i] = solve_nv( l, a, ∑Co60Eq, reduce_factor(f), reduce_factor(ɛ), np[:,:,l:l+1], mean_weight ); i += 1);
-		end
+for l in get_years()[1:end-1] # year =1:length(get_years())-1
+		 (nv[:, i] = solve_nv( l, a, ∑Co60Eq, reduce_factor(f), reduce_factor(ɛ), np[:,:,l:l+1], mean_weight ); i += 1);
+	end
 	write_result(nv)
 end
 
 function determine_list_∑Co60Eq()
+	fmx = Array(Array{Any,1}, 3)
 	list_∑Co60Eq = Array(Int, 0)
+	index = settings["clearance_paths"][1]
 
 	for i in ["fma", "fmb", "is"]
-		if !isempty( find(i .== genSettings.co60eq) )
+		if !isempty( find(i .== settings["use_co60eq"]) )
 			ind = find(i .== ["fma", "fmb", "is"])[1]
+			fmx[ ind ] = index[i];
 			push!(list_∑Co60Eq, ind)
 		end
 	end
+	if !isassigned(fmx, 1) && !isassigned(fmx, 2) && !isassigned(fmx, 3)
+		error("expected 'fma', 'fmb' or 'is' in a list in option 'use_co60eq'")
+	end
 
-	return list_∑Co60Eq
+	return fmx, list_∑Co60Eq
 end
 
 function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
@@ -289,19 +254,6 @@ function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
 	end
 end
 
-function add_user_constraints_GUI(m::JuMP.Model, x::Array{JuMP.Variable,1})
-	for i=1:length(rel_nuclides3)
-		if rel_nuclides3[i].relation == "<="
-			@constraint(m, x[i] <= rel_nuclides3[i].limit * 100)
-		elseif rel_nuclides3[i].relation == ">="
-			@constraint(m, x[i] >= rel_nuclides3[i].limit * 100)
-		elseif rel_nuclides3[i].relation == "=="
-			@constraint(m, x[i] == rel_nuclides3[i].limit * 100)
-		end
-	end
-end
-
-
 function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 									Tuple{DataStructures.OrderedDict{Int64,Int64},
 									DataStructures.OrderedDict{String,Int64},
@@ -319,13 +271,17 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 	#@objective(m, :Min, -sum( x[ find(rel_nuclides .== "Co60") | find(rel_nuclides .== "Cs137")]) );
 
 	# set objectives
-	if genSettings.target == "measure"
-		co60_weight = rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== "Co60") ][1].weight
-				@objective(m, :Min, - co60_weight * x[ find(rel_nuclides .== "Co60")][1]
+	if settings["ot"] == "measure"
+		if haskey(settings, "co60_weight")
+			co60_weight = settings["co60_weight"]
+		else
+			co60_weight = 1
+		end
+		@objective(m, :Min, - co60_weight * x[ find(rel_nuclides .== "Co60")][1]
 								-x[ find(rel_nuclides .== "Cs137")][1] );
-	elseif genSettings.target in keys(read_db(nvdb, "clearance_val").dicts[1])
-		@objective(m, :Min, sum(x .* f_red[genSettings.target, :]) );
-	elseif genSettings.target == "mean"
+	elseif settings["ot"] in keys(read_db(nvdb, "clearance_val").dicts[1])
+		@objective(m, :Min, sum(x .* f_red[settings["ot"], :]) );
+	elseif settings["ot"] == "mean"
 		np_red = mean( mean( np, 3)[:,:,1], 1)[:, rel_nuclides]
 		obj_tmp = x - 10_000 * np_red.array'
 
@@ -341,27 +297,29 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 	@constraint(m, sum(x) == 10_000);
 
 	# add user constraints
-	add_user_constraints_GUI(m, x)
+	if typeof(settings["constraints"]) != Void
+		add_user_constraints(m, x)
+	end
 
 	# Co60-equiv for nv
 	@expression(m, Co60eqnv[p=1:3], sum(ɛ_red[p,i] * x[i] for i = 1:length(rel_nuclides) if ɛ_red[p,i] != 0))
 
 	# determine fma / fmb / is
-	list_∑Co60Eq = determine_list_∑Co60Eq()
+	fmx, list_∑Co60Eq = determine_list_∑Co60Eq()
 
 	for r in list_∑Co60Eq
 		# lower bound
 		@constraint(m, constr_lb[k in fmx[r], j in keys(a.dicts[1]), h=0:1], Co60eqnv[r] ≤ ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) )
 		# upper bound
-		# if settings["use_upper_bound"]
-		# 	@constraint(m, constr_ub[k in fmx[r], j in keys(a.dicts[1]), h=0:1], ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) ≤ settings["upper_bound"] * Co60eqnv[r] )
-		# end
+		if settings["use_upper_bound"]
+			@constraint(m, constr_ub[k in fmx[r], j in keys(a.dicts[1]), h=0:1], ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) ≤ settings["upper_bound"] * Co60eqnv[r] )
+		end
 	end
 
 	sstatus = solve(m, suppress_warnings=true);
 
 	if (sstatus == :Infeasible)
-		#print_with_color(:red, string(l) * " no solution in given bounds\n")
+		print_with_color(:red, string(l) * " no solution in given bounds\n")
 		return zeros(length(x))
 	elseif sstatus == :Optimal
 		#print_with_color(:green, string(l) * " solution found.\n")
@@ -430,4 +388,14 @@ function get_pre_nv()
 		error("Nuclide vector sum is not 1!")
 	end
 	return full_list_nv
+end
+
+# Juno specific parts
+
+# Juno.@render Juno.Inline x::NamedArray begin
+# 	Juno.Table(x)
+# end
+
+function get_nv()
+	get_nv("settings/" * selector(readdir(pwd() * "/settings")) )
 end

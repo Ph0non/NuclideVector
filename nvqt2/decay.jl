@@ -6,22 +6,22 @@ end
 
 function decay_gui(y::String, show_relnuc::Bool)
   y = parse(y)
-  np = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts
+  np = decay_correction(nvdb, nuclide_names, y ) |> nuclide_parts
 
   # exposed as context property
   samples_row = ["Min"; "Mittel"; "Max"; map(x->string(x), names(np)[1])]
   @qmlset qmlcontext().samples_row = samples_row
 
   if show_relnuc
-    decay = [Decay(name, [minimum(np[:, name, y].array .* 100);
-                        mean(np[:, name, y].array .* 100);
-                        maximum(np[:, name, y].array .* 100);
-                        np[:, name, y].array .* 100] ) for name in [rel_nuclides3[i].name for i=1:length(rel_nuclides3) ] ]
+    decay = [Decay(name, [minimum(np[:, name].array .* 100);
+                        mean(np[:, name].array .* 100);
+                        maximum(np[:, name].array .* 100);
+                        np[:, name].array .* 100] ) for name in [rel_nuclides3[i].name for i=1:length(rel_nuclides3) ] ]
   else
-    decay = [Decay(name, [minimum(np[:, name, y].array .* 100);
-                        mean(np[:, name, y].array .* 100);
-                        maximum(np[:, name, y].array .* 100);
-                        np[:, name, y].array .* 100] ) for name in names(np)[2] ]
+    decay = [Decay(name, [minimum(np[:, name].array .* 100);
+                        mean(np[:, name].array .* 100);
+                        maximum(np[:, name].array .* 100);
+                        np[:, name].array .* 100] ) for name in names(np)[2] ]
   end
   decayModel = ListModel(decay)
 

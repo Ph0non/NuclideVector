@@ -1,21 +1,19 @@
 # NUCLIDE VECTOR TEST
 
 # nuclide vector
-nv_name : D01
-year : 2020
+nv_name : KWO
+year : 2019
 use_decay_correction : true
 # fma, fmb and/or is
 use_co60eq : [fma]
 
 # nuclide vector
 nuclide_vector :
-  - Co60 = 10.84
-  - Cs137 = 30
-  - Fe55 = 0
-  - Ni63 = 54.35
-  - Sr90 = 0
-  - Pu241 = 0.29
-  - Am241 = 4.52
+  - Co60 = 5.31
+  - Cs137 = 18.39
+  - Ni63 = 70
+  - Sr90 = 3.35
+  - Am241 = 2.95
   
    
 # additional settings
