@@ -55,7 +55,7 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_overestimate1, { "role": "name", "title": "Nuklid", "width": 100 }));
+                    addColumn(columnComponent.createObject(view_overestimate1, { "role": "name", "title": "Probe", "width": 80 }));
                     for(var i=0; i<fmx_row.length; i++) {
                         var role = fmx_row[i]
                         addColumn(columnComponent.createObject(view_overestimate1, { "role": role, "title": role}))
@@ -87,7 +87,7 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_overestimate2, { "role": "name", "title": "Nuklid", "width": 100 }));
+                    addColumn(columnComponent.createObject(view_overestimate2, { "role": "name", "title": "Probe", "width": 80 }));
                     for(var i=0; i<fmx_row.length; i++) {
                         var role = fmx_row[i]
                         addColumn(columnComponent.createObject(view_overestimate2, { "role": role, "title": role}))

@@ -8,20 +8,6 @@ import org.julialang 1.0
 
 GroupBox {
     id: general
-
-//    style: Style {
-//        property Component panel: Rectangle {
-//            Text {
-//                anchors.horizontalCenter: parent.horizontalCenter
-//                anchors.bottom: parent.top
-//                text: control.title
-//                renderType: Text.NativeRendering
-//                font.weight: Font.bold
-//                font.pointSize: 18
-//                color: "black"
-//            }
-//        }
-//    }
     title: qsTr("Allgemeine Einstellungen")
 
     Layout.preferredWidth: area.width
@@ -55,7 +41,6 @@ GroupBox {
                         model: nv_list
                         onCurrentTextChanged: {
                             Julia.get_genSettings_name(comboBox_select_nv.currentText)
-                            //Julia.decay_gui(comboBox_select_nv.currentText, false)
                         }
                     }
                 }

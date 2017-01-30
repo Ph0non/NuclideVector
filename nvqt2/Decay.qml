@@ -43,18 +43,6 @@ Window {
                 width: 780
                 model: decayModel
 
-//                resources:
-//                {
-//                    var columns = []
-//                    columns.push(columnComponent_decay.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }))
-//                    for(var i=0; i<samples_row.length; i++)
-//                    {
-//                        var role  = samples_row[i]
-//                        columns.push(columnComponent_decay.createObject(view_decay, { "role": role, "title": role}))
-//                    }
-//                    return columns
-//                }
-
                 function update_columns() {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);

@@ -45,18 +45,6 @@ GroupBox {
                 onRolesChanged: view.update_columns()
             }
 
-//            resources:
-//            {
-//                var columns = []
-//                columns.push(columnComponent.createObject(view, { "role": "name", "title": "Nuklid", "width": 100 }))
-//                for(var i=0; i<years.length; i++)
-//                {
-//                    var role  = years[i]
-//                    columns.push(columnComponent.createObject(view, { "role": role, "title": role}))
-//                }
-//                return columns
-//            }
-
             // first time init
             Component.onCompleted: update_columns()
         }
