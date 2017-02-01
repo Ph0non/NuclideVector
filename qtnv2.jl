@@ -1,5 +1,5 @@
 using QML
-using JLD
+# using JLD
 
 include("NuclideVector_v4.3_gui.jl")
 # exposed as property
@@ -26,23 +26,23 @@ include("nvqt2/clearance.jl")
 
 # TODO look further in data save/load
 # save Data
-function saveData()
-  jldopen("mydata.jld", "w") do file
-      write(file, "rel_nuclides3", rel_nuclides3)
-      write(file, "genSettings", genSettings)
-      write(file, "fmx", fmx)
-    end
-end
-@qmlfunction saveData
+# function saveData()
+#   jldopen("mydata.jld", "w") do file
+#       write(file, "rel_nuclides3", rel_nuclides3)
+#       write(file, "genSettings", genSettings)
+#       write(file, "fmx", fmx)
+#     end
+# end
+# @qmlfunction saveData
+#
+# # load Data
+# function loadData()
+#   global fmx = JLD.load("mydata.jld", "fmx")
+#   global rel_nuclides3 = JLD.load("mydata.jld", "rel_nuclides3")
+#   global genSettings = JLD.load("mydata.jld", "genSettings")
+# end
+# @qmlfunction loadData
 
-# load Data
-function loadData()
-  global fmx = JLD.load("mydata.jld", "fmx")
-  global rel_nuclides3 = JLD.load("mydata.jld", "rel_nuclides3")
-  global genSettings = JLD.load("mydata.jld", "genSettings")
-end
-@qmlfunction loadData
-
-@qmlapp "nvqt2/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel #years_model
+@qmlapp "nvqt2/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel
 
 exec()

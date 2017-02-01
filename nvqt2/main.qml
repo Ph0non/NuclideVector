@@ -82,50 +82,7 @@ ApplicationWindow {
             ///// show NV ////////////////////////
             //////////////////////////////////////
 
-           // ShowNV { id: shownv }
-
-            GroupBox {
-                id: shownv
-                title: "Nuklidvektor"
-                Layout.preferredWidth: area.width
-
-                ColumnLayout {
-
-                   Component {
-                       id: columnComponent
-                       TableViewColumn { width: 60 }
-                   }
-
-                    TableView {
-                        id: view
-                        height: 400
-                        Layout.preferredWidth: area.width - 15
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-                        model: nuclidesModel
-
-                        function update_columns() {
-                            while(columnCount != 0) { // remove existing columns first
-                                removeColumn(0);
-                            }
-                            addColumn(columnComponent.createObject(view, { "role": "name", "title": "Nuklid", "width": 100 }));
-                            for(var i=0; i<years.length; i++) {
-                                var role = years[i]
-                                addColumn(columnComponent.createObject(view, { "role": role, "title": role}))
-                            }
-                        }
-
-                        onModelChanged: view.update_columns()
-
-
-                        // first time init
-                        Component.onCompleted: update_columns()
-                    }
-
-                }
-
-            }
+            ShowNV { id: shownv }
 
             //////////////////////////////////////
             ///// Overestimation /////////////////
@@ -184,10 +141,10 @@ ApplicationWindow {
 
                     enabled: false
                     onClicked: {
+                        Julia.test_nv_gui("2016", 0)
                         var component = Qt.createComponent("Overestimation.qml")
                         win = component.createObject(mainWindow)
                         win.show()
-                        Julia.test_nv_gui("2016", 0)
                     }
                 }
 

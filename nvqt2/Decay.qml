@@ -47,10 +47,10 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }));
+                    addColumn(columnComponent_decay.createObject(view_decay, { "role": "name", "title": "Nuklid", "width": 80 }));
                     for(var i=0; i<samples_row.length; i++) {
                         var role = samples_row[i]
-                        addColumn(columnComponent.createObject(view_decay, { "role": role, "title": role}))
+                        addColumn(columnComponent_decay.createObject(view_decay, { "role": role, "title": role}))
                     }
                 }
 

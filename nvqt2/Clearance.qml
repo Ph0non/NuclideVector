@@ -37,10 +37,10 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_clearance, { "role": "name", "title": "Pfad", "width": 100 }));
+                    addColumn(columnComponent_clearance.createObject(view_clearance, { "role": "name", "title": "Pfad", "width": 100 }));
                     for(var i=0; i<years_clearance.length; i++) {
                         var role = years_clearance[i]
-                        addColumn(columnComponent.createObject(view_clearance, { "role": role, "title": role}))
+                        addColumn(columnComponent_clearance.createObject(view_clearance, { "role": role, "title": role}))
                     }
                 }
 

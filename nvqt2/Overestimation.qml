@@ -55,14 +55,21 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_overestimate1, { "role": "name", "title": "Probe", "width": 80 }));
+                    addColumn(columnComponent_overestimate1.createObject(view_overestimate1, { "role": "name", "title": "Probe", "width": 80 }));
                     for(var i=0; i<fmx_row.length; i++) {
                         var role = fmx_row[i]
-                        addColumn(columnComponent.createObject(view_overestimate1, { "role": role, "title": role}))
+                        addColumn(columnComponent_overestimate1.createObject(view_overestimate1, { "role": role, "title": role}))
                     }
                 }
 
                 onModelChanged: view_overestimate1.update_columns()
+
+//                itemDelegate: Text {
+//                    anchors.verticalCenter: parent.verticalCenter
+//                    color:
+//                    get(styleData.row).role < 1 ? "red" : "green"
+//                    text: styleData.value
+//                }
 
             }
 
@@ -87,10 +94,10 @@ Window {
                     while(columnCount != 0) { // remove existing columns first
                         removeColumn(0);
                     }
-                    addColumn(columnComponent.createObject(view_overestimate2, { "role": "name", "title": "Probe", "width": 80 }));
+                    addColumn(columnComponent_overestimate2.createObject(view_overestimate2, { "role": "name", "title": "Probe", "width": 80 }));
                     for(var i=0; i<fmx_row.length; i++) {
                         var role = fmx_row[i]
-                        addColumn(columnComponent.createObject(view_overestimate2, { "role": role, "title": role}))
+                        addColumn(columnComponent_overestimate2.createObject(view_overestimate2, { "role": role, "title": role}))
                     }
                 }
 
