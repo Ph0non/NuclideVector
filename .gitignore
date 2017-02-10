@@ -4,5 +4,6 @@ NV
 # QML
 *.pro
 *.pro.user
+*.qrc
 
 .directory
