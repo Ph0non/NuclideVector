@@ -19,7 +19,7 @@ function start_nv_calc()
 
   # add year roles manually:
   for (i,year) in enumerate(years)
-    addrole(nuclidesModel, year, n -> round(n.values[i],2))
+    addrole(nuclidesModel, year, n -> round(n.values[i],2), setindex!)
   end
   @qmlset qmlcontext().nuclidesModel = nuclidesModel
 
@@ -51,7 +51,7 @@ nuclidesModel = ListModel(nuclides)
 
 # add year roles manually:
 for (i,year) in enumerate(years)
-  addrole(nuclidesModel, year, n -> round(n.values[i],2))
+  addrole(nuclidesModel, year, n -> round(n.values[i],2), setindex!)
 end
 
 function copy2clipboard_nv()
