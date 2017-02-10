@@ -31,6 +31,14 @@ Window {
                     text: "Nur relevante Nuklide anzeigen"
                     onCheckedChanged: Julia.decay_gui( decay_CB_year.currentText, decay_check_rel_nuc.checked )
                 }
+                Button {
+                    text: qsTr("Kopiere in Zwischenablage")
+                    Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 180
+
+                    onClicked: Julia.copy2clipboard_decay( decay_CB_year.currentText, decay_check_rel_nuc.checked )
+                }
             }
 
             Text {
@@ -66,4 +74,3 @@ Window {
         }
     }
 }
-
