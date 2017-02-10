@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
+// import "TooltipCreator.js" as TooltipCreator
 
 GroupBox {
     id: shownv
@@ -47,6 +48,16 @@ GroupBox {
                return editableDelegate
            }
        }
+
+      //  ToolTip.create("Änderbar, um selbst eingetrage Nuklidvektoren auf Konservativität zu prüfen.", parent).show()
+
+      //  ToolTip2 {
+      //    id: tooltip1
+      //    width: 200
+      //    target: view
+      //    text: "Änderbar, um selbst eingetrage Nuklidvektoren auf Konservativität zu prüfen."
+      //    }
+
     }
     // editable TableView
     // code by http://stackoverflow.com/questions/23856114/in-qml-tableview-when-clicked-edit-a-data-like-excel
@@ -74,7 +85,7 @@ GroupBox {
                         target: loaderEditor.item
                         onEditingFinished: {
                             if (typeof styleData.value === 'number')
-                                nuclidesModel.setProperty(styleData.row, styleData.role, Number(parseFloat(loaderEditor.item.text).toFixed(0)))
+                                nuclidesModel.setProperty(styleData.row, styleData.role, Number(parseFloat(loaderEditor.item.text).toFixed(2)))
                             else
                                 nuclidesModel.setProperty(styleData.row, styleData.role, loaderEditor.item.text)
                         }

@@ -19,7 +19,7 @@ function start_nv_calc()
 
   # add year roles manually:
   for (i,year) in enumerate(years)
-    addrole(nuclidesModel, year, n -> round(n.values[i],2), setindex!)
+    addrole(nuclidesModel, year, n -> round(n.values[i],2), (n, newval, row) -> n[row].values[i] = newval)
   end
   @qmlset qmlcontext().nuclidesModel = nuclidesModel
 
@@ -30,28 +30,13 @@ end
 
 start_cal_ctx_button = true
 
-# function append_year()
-#   global years
-#   global nuclides
-#   global nuclidesModel
-#   newyear = length(years) > 0 ? string(parse(Int, years[end])+1) : "2016"
-#   push!(years, newyear)
-#   for nuc in nuclides
-#     push!(nuc.values, rand())
-#   end
-#   @qmlset qmlcontext().years = years
-#   year_idx = length(years)
-#   addrole(nuclidesModel, newyear, n -> round(n.values[year_idx],2))
-# end
-# @qmlfunction append_year
-
 years = map(x -> string(x), get_years()[1:end-1]) # exposed as context property
 nuclides = [Nuclide(name, zeros(length(years))) for name in ["Co60", "Cs137", "Fe55", "Ni63", "Sr90", "Am241"]]
 nuclidesModel = ListModel(nuclides)
 
 # add year roles manually:
 for (i,year) in enumerate(years)
-  addrole(nuclidesModel, year, n -> round(n.values[i],2), setindex!)
+  addrole(nuclidesModel, year, n -> round(n.values[i],2), (n, newval, row) -> n[row].values[i] = newval)
 end
 
 function copy2clipboard_nv()
