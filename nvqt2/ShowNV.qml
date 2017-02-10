@@ -41,8 +41,60 @@ GroupBox {
 
            // first time init
            Component.onCompleted: update_columns()
+
+           // editable TableView
+           itemDelegate: {
+               return editableDelegate
+           }
        }
-
     }
+    // editable TableView
+    Item {
+        anchors.fill: parent
 
+        Component {
+            id: editableDelegate
+            Item{
+
+                Text {
+                    width: parent.width
+                    anchors.margins: 4
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    elide: styleData.elideMode
+                    text: styleData.value !== undefined ? styleData.value : ""
+                    visible: !styleData.selected
+                }
+                Loader {
+                    id: loaderEditor
+                    anchors.fill: parent
+                    anchors.margins: 4
+                    Connections {
+                        target: loaderEditor.item
+                        onEditingFinished: {
+                            if (typeof styleData.value === 'number')
+                                nuclidesModel.setProperty(styleData.row, styleData.role, Number(parseFloat(loaderEditor.item.text).toFixed(0)))
+                            else
+                                nuclidesModel.setProperty(styleData.row, styleData.role, loaderEditor.item.text)
+                        }
+                    }
+                    sourceComponent: styleData.selected ? editor : null
+                    Component {
+                        id: editor
+                        TextInput {
+                            id: textinput
+                            color: styleData.textColor
+                            text: styleData.value
+                            MouseArea {
+                                id: mouseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: textinput.forceActiveFocus()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
