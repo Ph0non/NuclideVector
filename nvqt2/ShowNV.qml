@@ -49,6 +49,7 @@ GroupBox {
        }
     }
     // editable TableView
+    // code by http://stackoverflow.com/questions/23856114/in-qml-tableview-when-clicked-edit-a-data-like-excel
     Item {
         anchors.fill: parent
 
