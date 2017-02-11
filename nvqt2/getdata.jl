@@ -13,9 +13,9 @@ end
 @qmlfunction get_genSettings_name
 function get_genSettings_year( year::Array{Any})
   genSettings.year = map(x -> parse(Int64, x), year)
-  # create ListModel for ComboBox
-  years_model = ListModel(collect( genSettings.year[1] : genSettings.year[2] ) )
-  @qmlset qmlcontext().years_model = years_model
+  # create ListModel for ComboBox in Decay.qml
+  years_model_decay = ListModel(collect( genSettings.year[1] : genSettings.year[2] ) )
+  @qmlset qmlcontext().years_model_decay = years_model_decay
 end
 @qmlfunction get_genSettings_year
 function get_genSettings_co60eq( co60eq::String, checked::Bool)# target::String)

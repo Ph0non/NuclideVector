@@ -2,6 +2,7 @@ import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.1
 import org.julialang 1.0
 
 
@@ -42,9 +43,9 @@ ApplicationWindow {
         return siblings[0]
     }
 
-    property variant win
-    property variant win2
-    property variant win3
+    property variant win_overestimation
+    property variant win_clearance
+    property variant win_decay
     property int nuclide_name_length: 70
 
     MouseArea {
@@ -141,10 +142,13 @@ ApplicationWindow {
 
                     enabled: false
                     onClicked: {
-                        Julia.test_nv_gui("2016", 0)
-                        var component = Qt.createComponent("Overestimation.qml")
-                        win = component.createObject(mainWindow)
-                        win.show()
+                        if (Julia.sanity_check() == true) {
+                          Julia.update_year_ListModel()
+                          Julia.test_nv_gui("-1", 0)
+                          var component = Qt.createComponent("Overestimation.qml")
+                          win_overestimation = component.createObject(mainWindow)
+                          win_overestimation.show()
+                        }
                     }
                 }
 
@@ -157,10 +161,12 @@ ApplicationWindow {
 
                     enabled: false
                     onClicked: {
-                        var component = Qt.createComponent("Clearance.qml")
-                        win = component.createObject(mainWindow)
-                        win.show()
-                        Julia.clearance_gui()
+                        if (Julia.sanity_check() == true) {
+                          var component = Qt.createComponent("Clearance.qml")
+                          win_clearance = component.createObject(mainWindow)
+                          win_clearance.show()
+                          Julia.clearance_gui()
+                        }
                     }
                 }
 
@@ -173,18 +179,31 @@ ApplicationWindow {
                     onClicked: {
                         Julia.decay_gui( "2016", false )
                         var component = Qt.createComponent("Decay.qml")
-                        win2 = component.createObject(mainWindow)
-                        win2.show()
+                        win_decay = component.createObject(mainWindow)
+                        win_decay.show()
                     }
                 }
             }
         }
-
     }
 
-    //    JuliaSignals {
-    //        signal killColumn(int column_val)
-    //        onKillColumn: view.removeColumn(column_val)
-    //    }
+
+     JuliaSignals {
+         signal sanityFail()
+         onSanityFail: {
+           console.log("Good Fail")
+          //  MessageDialog {
+          //    id: sanity_popup
+          //    titel: "Moo!!!"
+          //    text: "Moo"
+          //    onAccepted: {}
+          //  }
+         }
+
+         signal need2CalcNew()
+         onNeed2CalcNew: {
+           console.log("You need to calculate again or change years.")
+         }
+     }
 
 }

@@ -6,11 +6,17 @@ end
 
 function test_nv_gui(y::String, fmx_ind::Int32)
   y = parse(y)
+  # TODO check year settings with calculated nv for overestimation and warn if there are no values
+  if y == -1
+    y = genSettings.year[1]
+  end
   fmx_ind += 1
-	a, ∑Co60Eq, f, ɛ = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts |> calc_factors
-
-	f_nv = f[:,rel_nuclides] * nv_NamedArray[:, y]
-	ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * nv_NamedArray[:, y]
+  __years__ = map(x -> parse(x), years)
+  append!(__years__, __years__[end]+1)
+	a, ∑Co60Eq, f, ɛ = calc_factors( decay_correction(nvdb, nuclide_names, __years__ ) |> nuclide_parts, __years__ )
+  
+  f_nv = f[:,rel_nuclides] * ListModel2NamedArray(nuclides)[:, y]
+  ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
 
 	list_∑Co60Eq = determine_list_∑Co60Eq()
 

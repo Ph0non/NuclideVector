@@ -22,7 +22,7 @@ Window {
             RowLayout {
                 ComboBox {
                     id: decay_CB_year
-                    model: years_model
+                    model: years_model_decay
 
                     onCurrentIndexChanged: Julia.decay_gui( decay_CB_year.currentText, decay_check_rel_nuc.checked )
                 }
@@ -74,4 +74,3 @@ Window {
         }
     }
 }
-
