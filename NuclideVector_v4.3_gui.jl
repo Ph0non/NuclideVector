@@ -129,7 +129,15 @@ function sanity_check()
   if isempty(san_idx)
     return true
   else
-    names(arr)[2][san_idx]
+    not_sane_years = names(arr)[2][san_idx]
+		s = ""
+		for i = 1 : length(not_sane_years)
+			s *= string(not_sane_years[i]) * ", "
+		end
+		# exposed as context property
+		sanity_string = s[1:end-2]
+		@qmlset qmlcontext().sanity_string = sanity_string
+
     @emit sanityFail()
     return false
   end
@@ -160,7 +168,7 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
@@ -196,7 +204,7 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 

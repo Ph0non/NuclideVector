@@ -19,9 +19,7 @@ function test_nv_gui(y::String, fmx_ind::Int32)
   else
     rel_nuclides = [rel_nuclides3[i].name for i=1:length(rel_nuclides3)]
   end
-print("Moo")
-print(rel_nuclides) # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-print("!")
+  
   f_nv = f[:,rel_nuclides] * ListModel2NamedArray(nuclides)[:, y]
   ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
 

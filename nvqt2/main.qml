@@ -2,8 +2,9 @@ import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import org.julialang 1.0
+import "underscore.js" as Underscore
 
 
 ApplicationWindow {
@@ -180,6 +181,15 @@ ApplicationWindow {
                         win_decay.show()
                     }
                 }
+
+                MessageDialog {
+                    id: sanity_popup
+                    icon: StandardIcon.Warning
+                    title: "Summe der Nuklide ergibt nicht 100%"
+                    text: Qt._.contains(sanity_string, ",") ?
+                    "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
+                    "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
+                }
             }
         }
     }
@@ -188,19 +198,6 @@ Component.onCompleted: Julia.update_year_ListModel()
 
      JuliaSignals {
          signal sanityFail()
-         onSanityFail: {
-           console.log("Good Fail")
-          //  MessageDialog {
-          //    id: sanity_popup
-          //    titel: "Moo!!!"
-          //    text: "Moo"
-          //    onAccepted: {}
-          //  }
-         }
-
-         signal need2CalcNew()
-         onNeed2CalcNew: {
-           console.log("You need to calculate again or change years.")
-         }
+         onSanityFail: sanity_popup.open()
      }
 }
