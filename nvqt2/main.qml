@@ -126,7 +126,6 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
                         Julia.copy2clipboard_nv()
                     }
@@ -140,7 +139,6 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
                         if (Julia.sanity_check() == true) {
                           Julia.update_year_ListModel()
@@ -159,7 +157,6 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
                         if (Julia.sanity_check() == true) {
                           var component = Qt.createComponent("Clearance.qml")
@@ -187,6 +184,7 @@ ApplicationWindow {
         }
     }
 
+Component.onCompleted: Julia.update_year_ListModel()
 
      JuliaSignals {
          signal sanityFail()
@@ -205,5 +203,4 @@ ApplicationWindow {
            console.log("You need to calculate again or change years.")
          }
      }
-
 }

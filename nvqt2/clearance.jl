@@ -10,14 +10,12 @@ clearance_unit = ["Bq/cm²", "Bq/g", "Bq/g", "Bq/g", "Bq/cm²", "Bq/g", "Bq/g", 
 function clearance_gui()
   np = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts
 
-  # exposed as context property
   update_year_ListModel()
-  # years_clearance = map(x -> string(x), get_years()[1:end-1])
-  # @qmlset qmlcontext().years_clearance = years_clearance
+  nv = ListModel2NamedArray(nuclides)
 
   clearance_val = read_db(nvdb, "clearance_val")
   f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames)
-  global clearance_year = 1./(f[:, names(nv_NamedArray)[1]] * nv_NamedArray./100)
+  global clearance_year = 1./(f[:, names(nv)[1]] * nv./100)
 
   clearance = [Clearance(name * " / " * clearance_unit[i], clearance_year[name, :].array) for (i, name) in enumerate( names(clearance_year)[1]) ]
   clearanceModel = ListModel(clearance)
