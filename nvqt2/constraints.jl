@@ -8,12 +8,8 @@ end
 global rel_nuclides3 = Array(Constraint, 0)
 sizehint!(rel_nuclides3, 6)
 function get_rel_nuc(nuc_name::String, rel::String, limit::String, weight::String)
-  if isempty(limit) limit = 0
-  else limit = float(limit)
-  end
-  if isempty(weight) weight = 1
-  else weight = float(weight)
-  end
+  isempty(limit) ? limit = 0 : limit = float(limit)
+  isempty(weight) ? weight = 1 : eight = float(weight)
   push!(rel_nuclides3, Constraint(nuc_name, rel, limit, weight ) )
   print(rel_nuclides3)
 end

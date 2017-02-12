@@ -2,7 +2,9 @@ import QtQuick 2.7
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
+import QtQuick.Dialogs 1.2
 import org.julialang 1.0
+import "underscore.js" as Underscore
 
 
 ApplicationWindow {
@@ -42,9 +44,9 @@ ApplicationWindow {
         return siblings[0]
     }
 
-    property variant win
-    property variant win2
-    property variant win3
+    property variant win_overestimation
+    property variant win_clearance
+    property variant win_decay
     property int nuclide_name_length: 70
 
     MouseArea {
@@ -125,7 +127,6 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
                         Julia.copy2clipboard_nv()
                     }
@@ -139,12 +140,14 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
-                        Julia.test_nv_gui("2016", 0)
-                        var component = Qt.createComponent("Overestimation.qml")
-                        win = component.createObject(mainWindow)
-                        win.show()
+                        if (Julia.sanity_check() == true) {
+                          Julia.update_year_ListModel()
+                          Julia.test_nv_gui("-1", 0)
+                          var component = Qt.createComponent("Overestimation.qml")
+                          win_overestimation = component.createObject(mainWindow)
+                          win_overestimation.show()
+                        }
                     }
                 }
 
@@ -155,12 +158,13 @@ ApplicationWindow {
                     Layout.preferredHeight: 40
                     Layout.preferredWidth: 100
 
-                    enabled: false
                     onClicked: {
-                        var component = Qt.createComponent("Clearance.qml")
-                        win = component.createObject(mainWindow)
-                        win.show()
-                        Julia.clearance_gui()
+                        if (Julia.sanity_check() == true) {
+                          var component = Qt.createComponent("Clearance.qml")
+                          win_clearance = component.createObject(mainWindow)
+                          win_clearance.show()
+                          Julia.clearance_gui()
+                        }
                     }
                 }
 
@@ -173,18 +177,27 @@ ApplicationWindow {
                     onClicked: {
                         Julia.decay_gui( "2016", false )
                         var component = Qt.createComponent("Decay.qml")
-                        win2 = component.createObject(mainWindow)
-                        win2.show()
+                        win_decay = component.createObject(mainWindow)
+                        win_decay.show()
                     }
+                }
+
+                MessageDialog {
+                    id: sanity_popup
+                    icon: StandardIcon.Warning
+                    title: "Summe der Nuklide ergibt nicht 100%"
+                    text: Qt._.contains(sanity_string, ",") ?
+                    "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
+                    "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
                 }
             }
         }
-
     }
 
-    //    JuliaSignals {
-    //        signal killColumn(int column_val)
-    //        onKillColumn: view.removeColumn(column_val)
-    //    }
+Component.onCompleted: Julia.update_year_ListModel()
 
+     JuliaSignals {
+         signal sanityFail()
+         onSanityFail: sanity_popup.open()
+     }
 }

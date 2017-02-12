@@ -109,6 +109,53 @@ function get_sample_info(x::String)
 	nable2arr( schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") ) )
 end
 
+# TODO make function more general
+function ListModel2NamedArray(lm::Array)
+  y = map(x -> parse(x), years)
+
+  n = Array(String, length(lm))
+  arr = Array(Float64, length(lm), length(y) )
+  for i = 1:length(lm)
+    arr[i,:] = lm[i].values'
+    n[i] = lm[i].name
+  end
+  return NamedArray(arr, (n, y), ("nuclides", "years"))
+end
+
+# check for sanity
+function sanity_check()
+  arr = ListModel2NamedArray(nuclides)
+  san_idx = find( round( sum(arr,1).array .- 100, 2) )
+  if isempty(san_idx)
+    return true
+  else
+    not_sane_years = names(arr)[2][san_idx]
+		s = ""
+		for i = 1 : length(not_sane_years)
+			s *= string(not_sane_years[i]) * ", "
+		end
+		# exposed as context property
+		sanity_string = s[1:end-2]
+		@qmlset qmlcontext().sanity_string = sanity_string
+
+    @emit sanityFail()
+    return false
+  end
+end
+@qmlfunction sanity_check
+
+function update_year_ListModel()
+	# create ListModel for ComboBox in Overestimation.qml
+	if isdefined(:years)
+		years_model = ListModel( map(x -> parse(x), years) )
+	else
+		global years = map(x -> string(x), get_years()[1:end-1])
+		years_model = ListModel( years )
+	end
+	@qmlset qmlcontext().years_model = years_model
+end
+@qmlfunction update_year_ListModel
+
 #######################################################
 # decay correction
 
@@ -121,7 +168,7 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
@@ -157,7 +204,7 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
@@ -224,6 +271,33 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 
 	(fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
 	for i in get_years()
+		A[:,:,i] = samples_part[:,:,i].array * fᵀ
+		∑Co60Eq[:,:,i] = samples_part[:,:,i].array * ɛᵀ # sum of Co60-equiv. also contain non measureable nuclides
+	end
+	a = 1./A;
+
+	return a, ∑Co60Eq, f, ɛ
+end
+
+function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
+												Tuple{DataStructures.OrderedDict{Int64,Int64},
+												DataStructures.OrderedDict{String,Int64},
+												DataStructures.OrderedDict{Int64,Int64}}}, __years__::Array)
+	#specific = read_setting(:specific, sf)
+	clearance_val = read_db(nvdb, "clearance_val");
+
+	ɛ = read_db(nvdb, "efficiency");
+	f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames);
+
+	A = NamedArray(Array(Float64, size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
+					(names(samples_part)[1], names(clearance_val)[1], __years__),
+					("sample", "path", "years")); # path -> clearance path
+	∑Co60Eq = NamedArray(Array(Float64, size(samples_part,1), size(ɛ,1), size(samples_part,3)),
+					(names(samples_part)[1], names(ɛ)[1], __years__),
+					("sample", "path", "years")); # path -> fma / fmb / is
+
+	(fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
+	for i in __years__
 		A[:,:,i] = samples_part[:,:,i].array * fᵀ
 		∑Co60Eq[:,:,i] = samples_part[:,:,i].array * ɛᵀ # sum of Co60-equiv. also contain non measureable nuclides
 	end

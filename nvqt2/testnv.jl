@@ -6,11 +6,22 @@ end
 
 function test_nv_gui(y::String, fmx_ind::Int32)
   y = parse(y)
+  if y == -1
+    y = genSettings.year[1]
+  end
   fmx_ind += 1
-	a, ∑Co60Eq, f, ɛ = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts |> calc_factors
+  __years__ = map(x -> parse(x), years)
+  append!(__years__, __years__[end]+1)
+	a, ∑Co60Eq, f, ɛ = calc_factors( decay_correction(nvdb, nuclide_names, __years__ ) |> nuclide_parts, __years__ )
 
-	f_nv = f[:,rel_nuclides] * nv_NamedArray[:, y]
-	ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * nv_NamedArray[:, y]
+  if isempty(rel_nuclides3) # standard values
+    rel_nuclides = ["Co60", "Cs137", "Fe55", "Ni63", "Sr90", "Am241"]
+  else
+    rel_nuclides = [rel_nuclides3[i].name for i=1:length(rel_nuclides3)]
+  end
+  
+  f_nv = f[:,rel_nuclides] * ListModel2NamedArray(nuclides)[:, y]
+  ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
 
 	list_∑Co60Eq = determine_list_∑Co60Eq()
 
@@ -35,10 +46,10 @@ function test_nv_gui(y::String, fmx_ind::Int32)
   fmx_row = fmx[fmx_ind]
   @qmlset qmlcontext().fmx_row = fmx_row
 
-  sampleOverestime = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
-  sampleModel = ListModel(sampleOverestime)
-  sampleOverestime_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
-  sampleModel_eoy = ListModel(sampleOverestime_eoy)
+  sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+  sampleModel = ListModel(sampleOverestimate)
+  sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+  sampleModel_eoy = ListModel(sampleOverestimate_eoy)
 
   # add roles manually:
   for (i,fmx_) in enumerate(fmx[fmx_ind])
@@ -52,10 +63,10 @@ end
 @qmlfunction test_nv_gui
 
 fmx_row = ["OF","1a","2a","4a","1b","2b","3b","4b","5b","6b_2c"]
-sampleOverestime = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
-sampleModel = ListModel(sampleOverestime)
-sampleOverestime_eoy = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
-sampleModel_eoy = ListModel(sampleOverestime_eoy)
+sampleOverestimate = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
+sampleModel = ListModel(sampleOverestimate)
+sampleOverestimate_eoy = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
+sampleModel_eoy = ListModel(sampleOverestimate_eoy)
   # add roles manually:
 for (i,fmx_) in enumerate(fmx_row)
   addrole(sampleModel, fmx_, n -> n.values[i])

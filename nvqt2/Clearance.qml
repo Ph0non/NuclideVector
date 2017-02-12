@@ -38,8 +38,8 @@ Window {
                         removeColumn(0);
                     }
                     addColumn(columnComponent_clearance.createObject(view_clearance, { "role": "name", "title": "Pfad", "width": 100 }));
-                    for(var i=0; i<years_clearance.length; i++) {
-                        var role = years_clearance[i]
+                    for(var i=0; i<years.length; i++) {
+                        var role = years[i]
                         addColumn(columnComponent_clearance.createObject(view_clearance, { "role": role, "title": role}))
                     }
                 }
@@ -57,4 +57,3 @@ Window {
         }
     }
 }
-
