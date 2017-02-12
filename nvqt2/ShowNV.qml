@@ -42,11 +42,6 @@ GroupBox {
 
            // first time init
            Component.onCompleted: update_columns()
-
-           // editable TableView
-           itemDelegate: {
-               return editableDelegate
-           }
        }
 
       //  ToolTip.create("Änderbar, um selbst eingetrage Nuklidvektoren auf Konservativität zu prüfen.", parent).show()
@@ -59,6 +54,7 @@ GroupBox {
       //    }
 
     }
+
     // editable TableView
     // code by http://stackoverflow.com/questions/23856114/in-qml-tableview-when-clicked-edit-a-data-like-excel
     Item {
