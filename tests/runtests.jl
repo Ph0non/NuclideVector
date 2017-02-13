@@ -13,17 +13,17 @@ year1_ctx = "2016"
 year2_ctx = "2026"
 
 # get data
-include("../nvqt2/getdata.jl")
+include("../src/getdata.jl")
 # decay
-include("../nvqt2/decay.jl")
+include("../src/decay.jl")
 # calc nv
-include("../nvqt2/calcnv.jl")
+include("../src/calcnv.jl")
 # get relevant nuclides and constraints
-include("../nvqt2/constraints.jl")
+include("../src/constraints.jl")
 # test NV
-include("../nvqt2/testnv.jl")
+include("../src/testnv.jl")
 # clearance
-include("../nvqt2/clearance.jl")
+include("../src/clearance.jl")
 
 
 facts("basics") do

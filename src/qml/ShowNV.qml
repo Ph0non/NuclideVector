@@ -39,6 +39,9 @@ GroupBox {
 
            onModelChanged: view.update_columns()
 
+           itemDelegate: {
+             return editableDelegate;
+           }
 
            // first time init
            Component.onCompleted: update_columns()

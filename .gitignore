@@ -7,3 +7,9 @@ NV
 *.qrc
 
 .directory
+
+# Bash
+*.sh
+
+# Coverage
+*.cov
