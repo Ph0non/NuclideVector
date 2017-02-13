@@ -2,7 +2,7 @@ using FactCheck
 
 using QML
 # using JLD
-include("../NuclideVector_v4.3_gui.jl")
+include("../src/core.jl")
 # exposed as property
 nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> nable2arr |> vec |> sort
 # exposed as property
