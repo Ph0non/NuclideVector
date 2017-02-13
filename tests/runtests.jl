@@ -25,6 +25,8 @@ include("../src/testnv.jl")
 # clearance
 include("../src/clearance.jl")
 
+years = ["2016", "2017", "2018"]
+nuclides = [Nuclide("Co60", [50, 33, 66]), Nuclide("Cs137", [50, 67, 34])]
 
 facts("basics") do
   @fact Date(2000, 1, 1):Dates.Year(1):Date(2003, 1, 1) |> collect |> travec --> [Date(2000,1,1) Date(2001,1,1) Date(2002,1,1) Date(2003,1,1)]
@@ -33,14 +35,20 @@ facts("basics") do
   @fact get_years() --> collect(2016:2026)
   @fact get_sample_info("date")[1] --> "20.02.1995"
   @fact get_sample_info("s_id")[1] --> 11
+
+  @fact sanity_check() --> true
+
+  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], 2016)[11,"Co60"] --> 1606.5139600660889
+  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], [2016, 2017])[11,"Co60",2017] --> 1408.0831273190711
 end
 
 facts("variables") do
   @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2])[3] --> "Co60"
+  @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]) --> ["Mn54","Co57","Co60","Zn65","Nb94","Ru106","Ag108m","Ag110m","Sb125","Cs134","Cs137","Ba133","Ce144","Eu152","Eu154","Eu155","Fe55","Ni63","Sr90","U234","U238","U235","Pu239Pu240","Pu238","Pu241","Am241","Cm242","Cm244","Ni59","H3","U233"]
 end
 
 facts("types") do
     @fact SQLite.query(nvdb, "pragma table_info(halflife)") |> typeof --> DataFrame
     @fact SQLite.query(nvdb, "select Co60 from halflife") |> schema2arr |> typeof --> Array{Nullable{Float64},2}
-    @fact [Nuclide("Co60", rand(10))] |> ListModel2NamedArray |> typeof --> NamedArrays.NamedArray{Float64,2,Array{Float64,2},Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}}
+    @fact [Nuclide("Co60", rand(length(years)))] |> ListModel2NamedArray |> typeof --> NamedArrays.NamedArray{Float64,2,Array{Float64,2},Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}}
 end

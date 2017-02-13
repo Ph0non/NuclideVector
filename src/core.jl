@@ -57,13 +57,6 @@ function arr2str(nn::Array{Int64, 1})
 	return nn_str
 end
 
-# function schema2arr(x::DataStreams.Data.Table)
-# 	y = Array(Any, x.schema.rows, x.schema.cols)
-# 	for i=1:x.schema.cols
-# 		y[:,i] = x.data[i].values
-# 	end
-# 	return y
-# end
 function schema2arr(x::DataFrames.DataFrame)
 	y = Array(x)
 end
@@ -89,21 +82,6 @@ function get_years()
 end
 
 reduce_factor(q) = q[:, convert(Array{String, 1}, rel_nuclides)]
-
-### deprecated
-# function get_rel_nuclides_and_weights()
-# 	el = length(settings["nuclides"])
-# 	rel_nuclides_tmp = Array(String, el)
-# 	mean_weight_tmp = ones(el)
-# 	spl_string = map( x -> split(x), settings["nuclides"] )
-# 	for i = 1 : el
-# 		rel_nuclides_tmp[i] = spl_string[i][1]
-# 		if checkbounds(Bool, spl_string[i], 2)
-# 			mean_weight_tmp[i] = parse(Float64, spl_string[i][2])
-# 		end
-# 	end
-# 	return (rel_nuclides_tmp, mean_weight_tmp)
-# end
 
 function del_zero_from_table()
 	for i in nuclide_names
@@ -190,8 +168,6 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 		samples_korr[:,"Am241",i] = Array(samples_korr[:,"Am241",i]) + Array(samples[:, "Pu241"]) .* hl[1,"Pu241"]./(hl[1,"Pu241"] - hl[1,"Am241"]) .*
 											(2.^(-tday[:,i].array ./ hl[1,"Pu241"]) - 2.^(-tday[:,i].array ./ hl[1,"Am241"]))
 	end
-
-	# @emit show_progress("Zerfallskorrektur")
 
 	return samples_korr
 end
