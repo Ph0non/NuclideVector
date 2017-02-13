@@ -34,7 +34,6 @@ clearance = [Clearance(name, zeros(length(years_clearance))) for name in SQLite.
 clearanceModel = ListModel(clearance)
 
 for (i,year_clearance) in enumerate( years_clearance )
-  print(year_clearance)
   addrole(clearanceModel, year_clearance, n -> round(n.values[i], 2))
 end
 

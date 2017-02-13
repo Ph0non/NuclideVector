@@ -11,30 +11,25 @@ function get_rel_nuc(nuc_name::String, rel::String, limit::String, weight::Strin
   isempty(limit) ? limit = 0 : limit = float(limit)
   isempty(weight) ? weight = 1 : eight = float(weight)
   push!(rel_nuclides3, Constraint(nuc_name, rel, limit, weight ) )
-  print(rel_nuclides3)
 end
 @qmlfunction get_rel_nuc
 
 function rm_rel_nuc(x::String)
   deleteat!(rel_nuclides3, find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== x))
-  # print(rel_nuclides3)
 end
 @qmlfunction rm_rel_nuc
 
 function get_relation(nuc_name::String, rel::String)
   rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].relation = rel
-  # print(rel_nuclides3)
 end
 @qmlfunction get_relation
 
 function get_limit(nuc_name::String, limit::String)
   rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].limit = float(limit)
-  # print(rel_nuclides3)
 end
 @qmlfunction get_limit
 
 function get_weight(nuc_name::String, weight::String)
   rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].weight = float(weight)
-  # print(rel_nuclides3)
 end
 @qmlfunction get_weight

@@ -6,8 +6,6 @@ end
 function start_nv_calc()
   @qmlset qmlcontext().start_cal_ctx_button = false
 
-  # @emit killColumn(Int32(1))
-
   # exposed as context property
   global years = map(x -> string(x), get_years()[1:end-1])
   @qmlset qmlcontext().years = years

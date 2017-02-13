@@ -4,8 +4,6 @@ using SQLite
 using NamedArrays
 using JuMP
 using Cbc
-using YAML
-using ProgressMeter
 
 #######################################################
 # helper functions
@@ -51,6 +49,14 @@ function arr2str(nn::Array{String, 1})
 	return nn_str
 end
 
+function arr2str(nn::Array{Int64, 1})
+	nn_str = string(nn[1])
+	for i=2:length(nn)
+		nn_str *= ", " * string(nn[i])
+	end
+	return nn_str
+end
+
 # function schema2arr(x::DataStreams.Data.Table)
 # 	y = Array(Any, x.schema.rows, x.schema.cols)
 # 	for i=1:x.schema.cols
@@ -79,25 +85,25 @@ function read_db(nvdb::SQLite.DB, tab::String)
 end
 
 function get_years()
-	# [parse(year1_ctx) : parse(year2_ctx); ] |> sort
 	collect(genSettings.year[1] : genSettings.year[2])  |> sort
 end
 
 reduce_factor(q) = q[:, convert(Array{String, 1}, rel_nuclides)]
 
-function get_rel_nuclides_and_weights()
-	el = length(settings["nuclides"])
-	rel_nuclides_tmp = Array(String, el)
-	mean_weight_tmp = ones(el)
-	spl_string = map( x -> split(x), settings["nuclides"] )
-	for i = 1 : el
-		rel_nuclides_tmp[i] = spl_string[i][1]
-		if checkbounds(Bool, spl_string[i], 2)
-			mean_weight_tmp[i] = parse(Float64, spl_string[i][2])
-		end
-	end
-	return (rel_nuclides_tmp, mean_weight_tmp)
-end
+### deprecated
+# function get_rel_nuclides_and_weights()
+# 	el = length(settings["nuclides"])
+# 	rel_nuclides_tmp = Array(String, el)
+# 	mean_weight_tmp = ones(el)
+# 	spl_string = map( x -> split(x), settings["nuclides"] )
+# 	for i = 1 : el
+# 		rel_nuclides_tmp[i] = spl_string[i][1]
+# 		if checkbounds(Bool, spl_string[i], 2)
+# 			mean_weight_tmp[i] = parse(Float64, spl_string[i][2])
+# 		end
+# 	end
+# 	return (rel_nuclides_tmp, mean_weight_tmp)
+# end
 
 function del_zero_from_table()
 	for i in nuclide_names
@@ -129,13 +135,8 @@ function sanity_check()
   if isempty(san_idx)
     return true
   else
-    not_sane_years = names(arr)[2][san_idx]
-		s = ""
-		for i = 1 : length(not_sane_years)
-			s *= string(not_sane_years[i]) * ", "
-		end
 		# exposed as context property
-		sanity_string = s[1:end-2]
+		sanity_string = arr2str(names(arr)[2][san_idx])
 		@qmlset qmlcontext().sanity_string = sanity_string
 
     @emit sanityFail()
