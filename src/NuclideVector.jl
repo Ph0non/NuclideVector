@@ -1,5 +1,3 @@
-using QML
-
 include("core.jl")
 # exposed as property
 nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> nable2arr |> vec |> sort

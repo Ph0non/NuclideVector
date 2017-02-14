@@ -4,6 +4,7 @@ using SQLite
 using NamedArrays
 using JuMP
 using Cbc
+using QML
 
 #######################################################
 # helper functions
