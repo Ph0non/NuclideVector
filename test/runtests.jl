@@ -1,7 +1,7 @@
 using FactCheck
 
-using QML
-# using JLD
+cd(joinpath("..", "src"))
+
 include("../src/core.jl")
 # exposed as property
 nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> nable2arr |> vec |> sort
@@ -38,8 +38,8 @@ facts("basics") do
 
   @fact sanity_check() --> true
 
-  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], 2016)[11,"Co60"] --> 1606.5139600660889
-  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], [2016, 2017])[11,"Co60",2017] --> 1408.0831273190711
+  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], 2016)[11,:].array --> [1606.5139600660889, 17.169121631227156, 14.606756459799302]
+  @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], [2016, 2017])[11,:,2017] --> [1408.0831273190711, 16.360099584555364, 14.610215241778892]
 end
 
 facts("variables") do
