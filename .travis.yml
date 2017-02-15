@@ -4,18 +4,18 @@ dist: trusty
 matrix:
   include:
     - os: linux
-    env:
-      - QML_SKIP_GUI_TESTS = 1
-    before_script:
-      - "export DISPLAY=:99.0"
-      - "sh -e /etc/init.d/xvfb start"
-      - sleep 3
-      - "export GaLLIUM_DRIVER=\"softpipe\""
-    julia: release
+      env:
+        - QML_SKIP_GUI_TESTS = 1
+        before_script:
+          - "export DISPLAY=:99.0"
+          - "sh -e /etc/init.d/xvfb start"
+          - sleep 3
+          - "export GaLLIUM_DRIVER=\"softpipe\""
+        julia: release
     - os: osx
-    julia:
-      - release
-      - nightly
+      julia:
+        - release
+        - nightly
 notifications:
     email: false
 # addons:
