@@ -1,18 +1,24 @@
 language: julia
 os:
     - linux
-    - osx
 julia:
-    - 0.5
-    - nightly
+    - release
 notifications:
     email: false
-sudo: false
+sudo: required
+dist: trusty
 # addons:
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia -e 'Pkg.clone(pwd())'
-    - julia -e 'Pkg.test("NuclideVector", coverage=true)
+    - julia -e 'Pkg.test("NuclideVector", coverage=true)'
 after_success:
     - echo $TRAVIS_JULIA_VERSION
     - julia -e 'Pkg.add("Coverage"); cd(Pkg.dir("NuclideVector")); using Coverage; Codecov.submit(process_folder())'
+env:
+  - QML_SKIP_GUI_TESTS = 1
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
+  - "export GaLLIUM_DRIVER=\"softpipe\""

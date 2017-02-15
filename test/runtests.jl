@@ -1,6 +1,10 @@
 using FactCheck
 
+<<<<<<< HEAD:test/runtests.jl
 cd(joinpath("..", "src"))
+=======
+cd("../src")
+>>>>>>> 79a632db948db8c330c9f23f24b26c20550fb152:test/runtests.jl
 
 include("../src/core.jl")
 # exposed as property
