@@ -296,16 +296,12 @@ function get_nv()
 	a, ∑Co60Eq, f, ɛ = np |> calc_factors
 
 	(nv = Array(Float64, length(rel_nuclides), size(a,3)-1); i = 1);
-# @showprogress
-# @progress ["Jahr"]
+
 
 	ymin = get_years()[1]
 	ymax = get_years()[end-1]
 
-	for l in get_years()[1:end-1] # year =1:length(get_years())-1
-		# @qmlset qmlcontext().progress_val_ctx = (l - ymin)/(ymax - ymin) |> Float32
-			# @emit show_progress(string(l))
-			# @emit progress_value( (l - ymin)/(ymax - ymin) |> Float32 )
+	for l in get_years()[1:end-1]
 			(nv[:, i] = solve_nv( l, a, ∑Co60Eq, reduce_factor(f), reduce_factor(ɛ), np[:,:,l:l+1], mean_weight ); i += 1);
 		end
 	write_result(nv)
