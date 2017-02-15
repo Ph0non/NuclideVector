@@ -3,7 +3,7 @@
 using SQLite
 using NamedArrays
 using JuMP
-# using Cbc
+using Cbc
 using QML
 
 #######################################################
@@ -221,14 +221,15 @@ function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,Array{Floa
 	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
 end
 
-function nuclide_parts(sf::AbstractString)
-	global settings = YAML.load(open(sf));
-	global rel_nuclides = get_rel_nuclides_and_weights()[1]
-	global nvdb = SQLite.DB(settings["db_name"]);
-	global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
-	samples_korr = decay_correction(nvdb, nuclide_names, get_years() )
-	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
-end
+### deprecated
+# function nuclide_parts(sf::AbstractString)
+# 	global settings = YAML.load(open(sf));
+# 	global rel_nuclides = get_rel_nuclides_and_weights()[1]
+# 	global nvdb = SQLite.DB(settings["db_name"]);
+# 	global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
+# 	samples_korr = decay_correction(nvdb, nuclide_names, get_years() )
+# 	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
+# end
 
 function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 												Tuple{DataStructures.OrderedDict{Int64,Int64},

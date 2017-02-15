@@ -35,6 +35,8 @@ facts("basics") do
   @fact get_years() --> collect(2016:2026)
   @fact get_sample_info("date")[1] --> "20.02.1995"
   @fact get_sample_info("s_id")[1] --> 11
+
+  nuclides = [Nuclide("Co60", [50, 33, 66]), Nuclide("Cs137", [50, 67, 34])]
   @fact sanity_check() --> true
 end
 
@@ -44,6 +46,8 @@ facts("calculations") do
 
   @fact nuclide_parts(decay_correction(nvdb, nuclide_names, [2016, 2017] ) )[11,  ["Co60", "Pu241", "Am241"], 2016].array --> roughly([0.65704,0.00702191,0.00597394], atol=1E-6)
   @fact nuclide_parts(decay_correction(nvdb, nuclide_names, 2017 ) )[11,  ["Co60", "Pu241", "Am241"]].array --> roughly([0.630349,0.00732384,0.00654047], atol=1E-6)
+
+  @pending @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, 2016 ) ) ) -->
 end
 
 facts("variables") do
