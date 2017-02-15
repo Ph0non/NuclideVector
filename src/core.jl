@@ -3,7 +3,7 @@
 using SQLite
 using NamedArrays
 using JuMP
-using Cbc
+# using Cbc
 using QML
 
 #######################################################
