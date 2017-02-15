@@ -61,6 +61,7 @@ end
 facts("variables") do
   @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2])[3] --> "Co60"
   @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]) --> ["Mn54","Co57","Co60","Zn65","Nb94","Ru106","Ag108m","Ag110m","Sb125","Cs134","Cs137","Ba133","Ce144","Eu152","Eu154","Eu155","Fe55","Ni63","Sr90","U234","U238","U235","Pu239Pu240","Pu238","Pu241","Am241","Cm242","Cm244","Ni59","H3","U233"]
+  @fact nable2arr(read_db(nvdb, "efficiency")[:,["Mn54", "Co60"]].array)[:,1] --> roughly([0.4585,2.30769,1.0], atol=1E-5)
 end
 
 facts("types") do
