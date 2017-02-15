@@ -320,22 +320,23 @@ function determine_list_∑Co60Eq()
 	return list_∑Co60Eq
 end
 
-function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
-	for constr in settings["constraints"]
-		constr_tmp = split(constr)
-		index = find(rel_nuclides .== constr_tmp[1])[1]
-		rhs = float(constr_tmp[3]) * 100
-		if constr_tmp[2] == "<="
-			@constraint(m, x[index] <= rhs)
-		elseif constr_tmp[2] == ">="
-			@constraint(m, x[index] >= rhs)
-		elseif (constr_tmp[2] == "==") | (constr_tmp[2] == "=")
-			@constraint(m, x[index] == rhs)
-		else
-			error("expected comparison operator (<=, >=, or ==) for constraints")
-		end
-	end
-end
+### deprecated
+# function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
+# 	for constr in settings["constraints"]
+# 		constr_tmp = split(constr)
+# 		index = find(rel_nuclides .== constr_tmp[1])[1]
+# 		rhs = float(constr_tmp[3]) * 100
+# 		if constr_tmp[2] == "<="
+# 			@constraint(m, x[index] <= rhs)
+# 		elseif constr_tmp[2] == ">="
+# 			@constraint(m, x[index] >= rhs)
+# 		elseif (constr_tmp[2] == "==") | (constr_tmp[2] == "=")
+# 			@constraint(m, x[index] == rhs)
+# 		else
+# 			error("expected comparison operator (<=, >=, or ==) for constraints")
+# 		end
+# 	end
+# end
 
 function add_user_constraints_GUI(m::JuMP.Model, x::Array{JuMP.Variable,1})
 	for i=1:length(rel_nuclides3)

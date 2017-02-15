@@ -27,6 +27,12 @@ include("../src/clearance.jl")
 
 years = ["2016", "2017", "2018"]
 nuclides = [Nuclide("Co60", [50, 33, 66]), Nuclide("Cs137", [50, 67, 34])]
+rel_nuclides3 = [Constraint("Co60", "NONE", 0, 0)
+                 Constraint("Cs137", ">=", 5, 0)
+                 Constraint("Ni63", "==", 10, 0)
+                 Constraint("Am241", "NONE", 0, 100)]
+push!(genSettings.co60eq, "is")
+genSettings.target = "mean"
 
 facts("basics") do
   @fact Date(2000, 1, 1):Dates.Year(1):Date(2003, 1, 1) |> collect |> travec --> [Date(2000,1,1) Date(2001,1,1) Date(2002,1,1) Date(2003,1,1)]
@@ -56,6 +62,8 @@ facts("calculations") do
   @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, [2016] ) ), [2016] )[2][1] --> 0.6683477256399165
   @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, [2016] ) ), [2016] )[3][2,1] --> 2.5
   @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, [2016] ) ), [2016] )[4][1].value --> 0.4585
+
+  @fact get_nv()[:,2016].array --> [84.81,5.0,10.0,0.19]
 end
 
 facts("variables") do
