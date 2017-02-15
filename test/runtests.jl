@@ -64,6 +64,8 @@ facts("calculations") do
   @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, [2016] ) ), [2016] )[4][1].value --> 0.4585
 
   @fact get_nv()[:,2016].array --> [84.81,5.0,10.0,0.19]
+  @fact start_nv_calc() --> nothing
+  @fact nv_NamedArray[:,2017].array --> [84.8,5.0,10.0,0.2]
 end
 
 facts("variables") do
@@ -76,4 +78,14 @@ facts("types") do
     @fact SQLite.query(nvdb, "pragma table_info(halflife)") |> typeof --> DataFrame
     @fact SQLite.query(nvdb, "select Co60 from halflife") |> schema2arr |> typeof --> Array{Nullable{Float64},2}
     @fact [Nuclide("Co60", rand(length(years)))] |> ListModel2NamedArray |> typeof --> NamedArrays.NamedArray{Float64,2,Array{Float64,2},Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}}
+end
+
+facts("copy2clipboard") do
+  copy2clipboard_nv()
+  @fact clipboard() --> "	2016	2017	2018	2019	2020	2021	2022	2023	2024	2025
+Co60	84,81	84,8	84,79	84,78	84,77	84,76	84,76	84,75	84,74	84,73
+Cs137	5,0	5,0	5,0	5,0	5,0	5,0	5,0	5,0	5,0	5,0
+Ni63	10,0	10,0	10,0	10,0	10,0	10,0	10,0	10,0	10,0	10,0
+Am241	0,19	0,2	0,21	0,22	0,23	0,24	0,24	0,25	0,26	0,27
+"
 end
