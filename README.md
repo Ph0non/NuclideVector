@@ -16,7 +16,11 @@ This package provides a comfortable way to calculate conservative nuclide vector
 It's written for the EWN Entsorgungswerk für Nuklearanlagen GmbH (former Energiewerke Nord GmbH).
 
 ### THIS IS NOT A MODULE!
-To run the application run `src/NuclideVector.jl`
+To run the application run
+```
+using NuclideVector
+run_nv()
+```
 
 ### Attention
-Temporaly is coin-or.org down, so no Cbc package. I Will fix this in `REQUIRE` and `core.jl` immediately coin-or.org is up again.
+Temporaly is coin-or.org down, so no Cbc package. I will fix this in `REQUIRE` and `core.jl` immediately coin-or.org is up again.

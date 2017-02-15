@@ -40,6 +40,8 @@ include("clearance.jl")
 # end
 # @qmlfunction loadData
 
-@qmlapp "qml/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel
+function run_nv()
+    @qmlapp "qml/main.qml" start_cal_ctx_button years nuclidesModel nv_list ot_list year1_ctx year2_ctx sampleModel sampleModel_eoy fmx_row samples_row decayModel years_clearance clearanceModel
 
 exec()
+end
