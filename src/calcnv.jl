@@ -55,5 +55,6 @@ function copy2clipboard_nv()
     s *= "\n"
   end
   clipboard(s)
+  return s
 end
 @qmlfunction copy2clipboard_nv
