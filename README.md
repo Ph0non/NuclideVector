@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-[![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector)
-  [![codecov](https://codecov.io/gh/Ph0non/NuclideVector/branch/master/graph/badge.svg)](https://codecov.io/gh/Ph0non/NuclideVector)
-=======
 # NuclideVector
 
 [![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector)
@@ -24,4 +20,3 @@ To run the application run `src/NuclideVector.jl`
 
 ### Attention
 Temporaly is coin-or.org down, so no Cbc package. I Will fix this in `REQUIRE` and `core.jl` immediately coin-or.org is up again.
->>>>>>> 79a632db948db8c330c9f23f24b26c20550fb152
