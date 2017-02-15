@@ -14,3 +14,9 @@ This package provides a comfortable way to calculate conservative nuclide vector
 - constraints and optional weights for radionuclides
 
 It's written for the EWN Entsorgungswerk für Nuklearanlagen GmbH (former Energiewerke Nord GmbH).
+
+### THIS IS NOT A MODULE!
+To run the application run `src/NuclideVector.jl`
+
+### Attention
+Temporaly is coin-or.org down, so no Cbc package. I Will fix this in `REQUIRE` and `core.jl` immediately coin-or.org is up again.
