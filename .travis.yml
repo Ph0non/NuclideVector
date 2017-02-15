@@ -8,7 +8,10 @@ notifications:
     email: false
 sudo: required
 dist: trusty
-# addons:
+addons:
+  apt:
+    packages:
+      xsel
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia -e 'Pkg.clone(pwd())'
