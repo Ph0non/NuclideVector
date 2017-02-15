@@ -47,7 +47,10 @@ facts("calculations") do
   @fact nuclide_parts(decay_correction(nvdb, nuclide_names, [2016, 2017] ) )[11,  ["Co60", "Pu241", "Am241"], 2016].array --> roughly([0.65704,0.00702191,0.00597394], atol=1E-6)
   @fact nuclide_parts(decay_correction(nvdb, nuclide_names, 2017 ) )[11,  ["Co60", "Pu241", "Am241"]].array --> roughly([0.630349,0.00732384,0.00654047], atol=1E-6)
 
-  @pending @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, 2016 ) ) ) -->
+  @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, get_years() ) ) )[1][1] --> 1.191405847123472
+  @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, get_years() ) ) )[2][1] --> 0.6683477256399165
+  @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, get_years() ) ) )[3][2,1] --> 2.5
+  @fact calc_factors(nuclide_parts(decay_correction(nvdb, nuclide_names, get_years() ) ) )[4][1].value --> 0.4585
 end
 
 facts("variables") do
