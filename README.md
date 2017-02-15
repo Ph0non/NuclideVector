@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector)
   [![codecov](https://codecov.io/gh/Ph0non/NuclideVector/branch/master/graph/badge.svg)](https://codecov.io/gh/Ph0non/NuclideVector)
 
-This package provides a comfortable way to calculate conservative nuclides vectors in accordance with the german Radiation Protection Ordinance.
+This package provides a comfortable way to calculate conservative nuclide vectors in accordance with the german Radiation Protection Ordinance.
 
 ## Main Features
 - Store samples in a SQLite database

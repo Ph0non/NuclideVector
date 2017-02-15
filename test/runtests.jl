@@ -2,7 +2,7 @@ using FactCheck
 
 cd("../src")
 
-include("core.jl")
+include("../src/core.jl")
 # exposed as property
 nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> nable2arr |> vec |> sort
 # exposed as property
@@ -13,17 +13,17 @@ year1_ctx = "2016"
 year2_ctx = "2026"
 
 # get data
-include("getdata.jl")
+include("../src/getdata.jl")
 # decay
-include("decay.jl")
+include("../src/decay.jl")
 # calc nv
-include("calcnv.jl")
+include("../src/calcnv.jl")
 # get relevant nuclides and constraints
-include("constraints.jl")
+include("../src/constraints.jl")
 # test NV
-include("testnv.jl")
+include("../src/testnv.jl")
 # clearance
-include("clearance.jl")
+include("../src/clearance.jl")
 
 years = ["2016", "2017", "2018"]
 nuclides = [Nuclide("Co60", [50, 33, 66]), Nuclide("Cs137", [50, 67, 34])]
