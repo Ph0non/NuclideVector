@@ -12,7 +12,7 @@ sudo: false
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia -e 'Pkg.clone(pwd())'
-    - julia -e 'Pkg.test("NuclideVector", coverage=true)
+    - julia -e 'Pkg.test("NuclideVector", coverage=true)''
 after_success:
     - echo $TRAVIS_JULIA_VERSION
     - julia -e 'Pkg.add("Coverage"); cd(Pkg.dir("NuclideVector")); using Coverage; Codecov.submit(process_folder())'
