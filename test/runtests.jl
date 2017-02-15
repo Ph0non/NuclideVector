@@ -1,10 +1,6 @@
 using FactCheck
 
-<<<<<<< HEAD:test/runtests.jl
-cd(joinpath("..", "src"))
-=======
 cd("../src")
->>>>>>> 79a632db948db8c330c9f23f24b26c20550fb152:test/runtests.jl
 
 include("../src/core.jl")
 # exposed as property
@@ -39,11 +35,15 @@ facts("basics") do
   @fact get_years() --> collect(2016:2026)
   @fact get_sample_info("date")[1] --> "20.02.1995"
   @fact get_sample_info("s_id")[1] --> 11
-
   @fact sanity_check() --> true
+end
 
+facts("calculations") do
   @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], 2016)[11,:].array --> [1606.5139600660889, 17.169121631227156, 14.606756459799302]
   @fact decay_correction(nvdb, ["Co60", "Pu241", "Am241"], [2016, 2017])[11,:,2017] --> [1408.0831273190711, 16.360099584555364, 14.610215241778892]
+
+  @fact nuclide_parts(decay_correction(nvdb, nuclide_names, [2016, 2017] ) )[11,  ["Co60", "Pu241", "Am241"], 2016].array --> roughly([0.65704,0.00702191,0.00597394], atol=1E-6)
+  @fact nuclide_parts(decay_correction(nvdb, nuclide_names, 2017 ) )[11,  ["Co60", "Pu241", "Am241"]].array --> roughly([0.630349,0.00732384,0.00654047], atol=1E-6)
 end
 
 facts("variables") do

@@ -234,7 +234,6 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 												Tuple{DataStructures.OrderedDict{Int64,Int64},
 												DataStructures.OrderedDict{String,Int64},
 												DataStructures.OrderedDict{Int64,Int64}}})
-	#specific = read_setting(:specific, sf)
 	clearance_val = read_db(nvdb, "clearance_val");
 
 	ɛ = read_db(nvdb, "efficiency");
@@ -261,7 +260,7 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 												Tuple{DataStructures.OrderedDict{Int64,Int64},
 												DataStructures.OrderedDict{String,Int64},
 												DataStructures.OrderedDict{Int64,Int64}}}, __years__::Array)
-	#specific = read_setting(:specific, sf)
+
 	clearance_val = read_db(nvdb, "clearance_val");
 
 	ɛ = read_db(nvdb, "efficiency");
