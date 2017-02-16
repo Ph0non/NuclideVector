@@ -8,11 +8,8 @@ end
 global rel_nuclides3 = Array(Constraint, 0)
 sizehint!(rel_nuclides3, 6)
 function get_rel_nuc(nuc_name::String, rel::String, limit::String, weight::String)
-  function get_rel_nuc(nuc_name::String, rel::String, limit::String, weight::String)
-    isempty(limit) ? (limit = 0) : (limit = float(limit))
-    isempty(weight) ? (weight = 1) : (weight = float(weight))
-    push!(rel_nuclides3, Constraint(nuc_name, rel, limit, weight ) )
-  end
+  isempty(limit) ? (limit = 0) : (limit = float(limit))
+  isempty(weight) ? (weight = 1) : (weight = float(weight))
   push!(rel_nuclides3, Constraint(nuc_name, rel, limit, weight ) )
 end
 @qmlfunction get_rel_nuc
