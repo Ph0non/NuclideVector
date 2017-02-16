@@ -118,7 +118,9 @@ function sanity_check()
 		sanity_string = arr2str(names(arr)[2][san_idx])
 		@qmlset qmlcontext().sanity_string = sanity_string
 
-    @emit sanityFail()
+		try
+    	@emit sanityFail()
+		end
     return false
   end
 end
@@ -355,8 +357,6 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 			@constraint(m, z[i] >= -obj_tmp[i] )
 		end
 		@objective(m, :Min, sum(z .* mean_weight) )
-	else
-		error("expected 'measure', 'mean' or clearance path for optimization target")
 	end
 	@constraint(m, sum(x) == 10_000);
 
@@ -376,15 +376,10 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 
 	sstatus = solve(m, suppress_warnings=true);
 
-	if (sstatus == :Infeasible)
-		#print_with_color(:red, string(l) * " no solution in given bounds\n")
+	if sstatus == :Infeasible
 		return zeros(length(x))
 	elseif sstatus == :Optimal
-		#print_with_color(:green, string(l) * " solution found.\n")
 		return round(getvalue(x)./100, 2)
-	else
-		print("Something weird happen! sstatus = " * string(sstatus) *"\n")
-		return zeros(length(x))
 	end
 
 end
