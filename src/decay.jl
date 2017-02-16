@@ -30,7 +30,7 @@ function decay_gui(y::String, show_relnuc::Bool)
     addrole(decayModel, sample_row, n -> round(n.values[i], 4))
   end
   @qmlset qmlcontext().decayModel = decayModel
-
+  return decay
 end
 @qmlfunction decay_gui
 
@@ -62,7 +62,7 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
       s *= val * "\t" * string(minimum(np[:, val].array) .* 100) * "\t" *
                                             string(mean(np[:, val].array) .* 100) * "\t" *
                                             string(maximum(np[:, val].array) .* 100) * "\t"
-      for i=1:size(np, 1)
+      for i in names(np, 1)
         s *= replace(string(np[i, val] * 100), ".", ",") * "\t"
       end
       s *= "\n"
@@ -80,5 +80,6 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
   end
 
   clipboard(s)
+  return s
 end
 @qmlfunction copy2clipboard_decay
