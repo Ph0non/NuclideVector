@@ -19,6 +19,7 @@ function get_genSettings_year( year::Array)
 end
 @qmlfunction get_genSettings_year
 function get_genSettings_co60eq( co60eq::String, checked::Bool)
+  if checked
     push!(genSettings.co60eq, co60eq)
   else
     deleteat!(genSettings.co60eq, find( [genSettings.co60eq .== co60eq][1] )  )
