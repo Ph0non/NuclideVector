@@ -8,17 +8,6 @@ notifications:
     email: false
 sudo: required
 dist: trusty
-addons:
-  apt:
-    packages:
-      xsel
-script:
-    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'Pkg.clone(pwd())'
-    - julia -e 'Pkg.test("NuclideVector", coverage=true)'
-after_success:
-    - echo $TRAVIS_JULIA_VERSION
-    - julia -e 'Pkg.add("Coverage"); cd(Pkg.dir("NuclideVector")); using Coverage; Codecov.submit(process_folder())'
 env:
   - QML_SKIP_GUI_TESTS = 1
 before_script:
@@ -26,3 +15,15 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
   - "export GaLLIUM_DRIVER=\"softpipe\""
+before_install:
+  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+  - chmod 755 ./travis-tool.sh
+  - ./travis-tool.sh bootstrap
+  - "sudo apt-get install xclip xsel --no-install-recommends --yes"
+script:
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - julia -e 'Pkg.clone(pwd())'
+    - julia -e 'Pkg.test("NuclideVector", coverage=true)'
+after_success:
+    - echo $TRAVIS_JULIA_VERSION
+    - julia -e 'Pkg.add("Coverage"); cd(Pkg.dir("NuclideVector")); using Coverage; Codecov.submit(process_folder())'
