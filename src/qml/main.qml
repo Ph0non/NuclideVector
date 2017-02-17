@@ -194,10 +194,19 @@ ApplicationWindow {
         }
     }
 
+    MessageDialog {
+        id: isNumberFail_popup
+        icon: StandardIcon.Warning
+        text: "Eingabe ist keine gültige Zahl!"
+      }
+
 Component.onCompleted: Julia.update_year_ListModel()
 
      JuliaSignals {
          signal sanityFail()
          onSanityFail: sanity_popup.open()
+
+         signal isNumberFail()
+         onIsNumberFail: isNumberFail_popup.open()
      }
 }

@@ -25,11 +25,37 @@ end
 @qmlfunction get_relation
 
 function get_limit(nuc_name::String, limit::String)
-  rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].limit = float(limit)
+  if !(tryparse(Float64, limit) |> isnull)
+    parsed = parse(limit)
+    if 0 <= parsed <= 100
+      rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].limit = parsed
+    else
+      try
+        @emit isNumberFail()
+      end
+    end
+  else
+    try
+      @emit isNumberFail()
+    end
+  end
 end
 @qmlfunction get_limit
 
 function get_weight(nuc_name::String, weight::String)
-  rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].weight = float(weight)
+  if !(tryparse(Float64, weight) |> isnull)
+    parsed = parse(weight)
+    if parsed > 0
+      rel_nuclides3[ find( [rel_nuclides3[i].name for i=1:length(rel_nuclides3)] .== nuc_name) ][1].weight = parsed
+    else
+      try
+        @emit isNumberFail()
+      end
+    end
+  else
+    try
+      @emit isNumberFail()
+    end
+  end
 end
 @qmlfunction get_weight
