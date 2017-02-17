@@ -186,9 +186,12 @@ ApplicationWindow {
                     id: sanity_popup
                     icon: StandardIcon.Warning
                     title: "Summe der Nuklide ergibt nicht 100%"
-                    text: Qt._.contains(sanity_string, ",") ?
-                    "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
-                    "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
+                    text: {
+                        var patt = /,/;
+                        patt.test(sanity_string) ?
+                        "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
+                        "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
+                    }
                 }
             }
         }
