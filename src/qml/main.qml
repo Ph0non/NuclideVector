@@ -4,8 +4,6 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 import org.julialang 1.0
-import "underscore.js" as Underscore
-
 
 ApplicationWindow {
     visible: true
