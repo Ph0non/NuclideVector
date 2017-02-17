@@ -170,8 +170,12 @@ facts("check constraints") do
 
   @fact rm_rel_nuc("Co60") --> [Constraint("Cs137", "<=", 10.5, 100)]
   @fact get_relation("Cs137", ">=") --> ">="
+  @fact get_limit("Cs137", "-5") --> nothing
+  @fact get_limit("Cs137", "Moo!") --> nothing
   @fact get_limit("Cs137", "5.25") --> 5.25
-  @fact get_weight("Cs137", "0") --> 0
+  @fact get_weight("Cs137", "Moo") --> nothing
+  @fact get_weight("Cs137", "0") --> nothing
+  @fact get_weight("Cs137", "1") --> 1
 end
 
 
