@@ -30,7 +30,7 @@ function decay_gui(y::String, show_relnuc::Bool)
     addrole(decayModel, sample_row, n -> round(n.values[i], 4))
   end
   @qmlset qmlcontext().decayModel = decayModel
-
+  return decay
 end
 @qmlfunction decay_gui
 
@@ -48,6 +48,7 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
 
   y = parse(y)
   np = decay_correction(nvdb, nuclide_names, y ) |> nuclide_parts
+  np.array .*= 100
   samples_row = ["Min"; "Mittel"; "Max"; map(x->string(x), names(np)[1])]
 
   s *= "\t"
@@ -59,19 +60,19 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
   if show_relnuc
     rel_nuc_name = [rel_nuclides3[i].name for i=1:length(rel_nuclides3)]
     for (j, val) in enumerate(rel_nuc_name)
-      s *= val * "\t" * string(minimum(np[:, val].array) .* 100) * "\t" *
-                                            string(mean(np[:, val].array) .* 100) * "\t" *
-                                            string(maximum(np[:, val].array) .* 100) * "\t"
-      for i=1:size(np, 1)
+      s *= val * "\t" * string(minimum(np[:, val].array) ) * "\t" *
+                                            string(mean(np[:, val].array) ) * "\t" *
+                                            string(maximum(np[:, val].array) ) * "\t"
+      for i in names(np, 1)
         s *= replace(string(np[i, val] * 100), ".", ",") * "\t"
       end
       s *= "\n"
     end
   else
     for j=1:size(np, 2)
-      s *= string(names(np)[2][j]) * "\t" * string(minimum(np.array[:, j]) .* 100) * "\t" *
-                                            string(mean(np.array[:, j]) .* 100) * "\t" *
-                                            string(maximum(np.array[:, j]) .* 100) * "\t"
+      s *= string(names(np)[2][j]) * "\t" * string(minimum(np.array[:, j]) ) * "\t" *
+                                            string(mean(np.array[:, j]) ) * "\t" *
+                                            string(maximum(np.array[:, j]) ) * "\t"
       for i=1:size(np, 1)
         s *= replace(string(np.array[i, j] * 100), ".", ",") * "\t"
       end
@@ -80,5 +81,6 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
   end
 
   clipboard(s)
+  return s
 end
 @qmlfunction copy2clipboard_decay

@@ -19,7 +19,7 @@ function test_nv_gui(y::String, fmx_ind::Int32)
   else
     rel_nuclides = [rel_nuclides3[i].name for i=1:length(rel_nuclides3)]
   end
-  
+
   f_nv = f[:,rel_nuclides] * ListModel2NamedArray(nuclides)[:, y]
   ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
 
@@ -79,6 +79,7 @@ function copy2clipboard_testnv(y::String)
   s *= "\n\n31.12." * y * "\n"
   s *= helper_copy2clipboard_testnv(ratio2)
   clipboard(s)
+  return s
 end
 @qmlfunction copy2clipboard_testnv
 

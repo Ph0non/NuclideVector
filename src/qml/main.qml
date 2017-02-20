@@ -4,8 +4,6 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.2
 import org.julialang 1.0
-import "underscore.js" as Underscore
-
 
 ApplicationWindow {
     visible: true
@@ -186,18 +184,30 @@ ApplicationWindow {
                     id: sanity_popup
                     icon: StandardIcon.Warning
                     title: "Summe der Nuklide ergibt nicht 100%"
-                    text: Qt._.contains(sanity_string, ",") ?
-                    "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
-                    "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
+                    text: {
+                        var patt = /,/;
+                        patt.test(sanity_string) ?
+                        "Die Summe der Nuklide der Jahre " + sanity_string + " ergibt nicht 100%!" :
+                        "Die Summe der Nuklide des Jahres " + sanity_string + " ergibt nicht 100%!"
+                    }
                 }
             }
         }
     }
+
+    MessageDialog {
+        id: isNumberFail_popup
+        icon: StandardIcon.Warning
+        text: "Eingabe ist keine gültige Zahl!"
+      }
 
 Component.onCompleted: Julia.update_year_ListModel()
 
      JuliaSignals {
          signal sanityFail()
          onSanityFail: sanity_popup.open()
+
+         signal isNumberFail()
+         onIsNumberFail: isNumberFail_popup.open()
      }
 }

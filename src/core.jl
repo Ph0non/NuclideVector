@@ -3,7 +3,7 @@
 using SQLite
 using NamedArrays
 using JuMP
-# using Cbc
+using Cbc
 using QML
 
 #######################################################
@@ -118,7 +118,9 @@ function sanity_check()
 		sanity_string = arr2str(names(arr)[2][san_idx])
 		@qmlset qmlcontext().sanity_string = sanity_string
 
-    @emit sanityFail()
+		try
+    	@emit sanityFail()
+		end
     return false
   end
 end
@@ -221,15 +223,6 @@ function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,Array{Floa
 	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
 end
 
-function nuclide_parts(sf::AbstractString)
-	global settings = YAML.load(open(sf));
-	global rel_nuclides = get_rel_nuclides_and_weights()[1]
-	global nvdb = SQLite.DB(settings["db_name"]);
-	global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
-	samples_korr = decay_correction(nvdb, nuclide_names, get_years() )
-	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
-end
-
 function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 												Tuple{DataStructures.OrderedDict{Int64,Int64},
 												DataStructures.OrderedDict{String,Int64},
@@ -295,16 +288,12 @@ function get_nv()
 	a, ∑Co60Eq, f, ɛ = np |> calc_factors
 
 	(nv = Array(Float64, length(rel_nuclides), size(a,3)-1); i = 1);
-# @showprogress
-# @progress ["Jahr"]
+
 
 	ymin = get_years()[1]
 	ymax = get_years()[end-1]
 
-	for l in get_years()[1:end-1] # year =1:length(get_years())-1
-		# @qmlset qmlcontext().progress_val_ctx = (l - ymin)/(ymax - ymin) |> Float32
-			# @emit show_progress(string(l))
-			# @emit progress_value( (l - ymin)/(ymax - ymin) |> Float32 )
+	for l in get_years()[1:end-1]
 			(nv[:, i] = solve_nv( l, a, ∑Co60Eq, reduce_factor(f), reduce_factor(ɛ), np[:,:,l:l+1], mean_weight ); i += 1);
 		end
 	write_result(nv)
@@ -321,23 +310,6 @@ function determine_list_∑Co60Eq()
 	end
 
 	return list_∑Co60Eq
-end
-
-function add_user_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
-	for constr in settings["constraints"]
-		constr_tmp = split(constr)
-		index = find(rel_nuclides .== constr_tmp[1])[1]
-		rhs = float(constr_tmp[3]) * 100
-		if constr_tmp[2] == "<="
-			@constraint(m, x[index] <= rhs)
-		elseif constr_tmp[2] == ">="
-			@constraint(m, x[index] >= rhs)
-		elseif (constr_tmp[2] == "==") | (constr_tmp[2] == "=")
-			@constraint(m, x[index] == rhs)
-		else
-			error("expected comparison operator (<=, >=, or ==) for constraints")
-		end
-	end
 end
 
 function add_user_constraints_GUI(m::JuMP.Model, x::Array{JuMP.Variable,1})
@@ -367,7 +339,6 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 	ɛ_red = nable2arr(ɛ_red);
 	m=Model(solver = CbcSolver());
 	@variable(m, 0 ≤ x[1:length(rel_nuclides)] ≤ 10_000, Int);
-	#@objective(m, :Min, -sum( x[ find(rel_nuclides .== "Co60") | find(rel_nuclides .== "Cs137")]) );
 
 	# set objectives
 	if genSettings.target == "measure"
@@ -386,8 +357,6 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 			@constraint(m, z[i] >= -obj_tmp[i] )
 		end
 		@objective(m, :Min, sum(z .* mean_weight) )
-	else
-		error("expected 'measure', 'mean' or clearance path for optimization target")
 	end
 	@constraint(m, sum(x) == 10_000);
 
@@ -403,23 +372,14 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 	for r in list_∑Co60Eq
 		# lower bound
 		@constraint(m, constr_lb[k in fmx[r], j in keys(a.dicts[1]), h=0:1], Co60eqnv[r] ≤ ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) )
-		# upper bound
-		# if settings["use_upper_bound"]
-		# 	@constraint(m, constr_ub[k in fmx[r], j in keys(a.dicts[1]), h=0:1], ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) ≤ settings["upper_bound"] * Co60eqnv[r] )
-		# end
 	end
 
 	sstatus = solve(m, suppress_warnings=true);
 
-	if (sstatus == :Infeasible)
-		#print_with_color(:red, string(l) * " no solution in given bounds\n")
+	if sstatus == :Infeasible
 		return zeros(length(x))
 	elseif sstatus == :Optimal
-		#print_with_color(:green, string(l) * " solution found.\n")
 		return round(getvalue(x)./100, 2)
-	else
-		print("Something weird happen! sstatus = " * string(sstatus) *"\n")
-		return zeros(length(x))
 	end
 
 end
@@ -427,58 +387,4 @@ end
 function write_result(nv::Array{Float64,2})
 	NamedArray( nv, (rel_nuclides, get_years()[1:end-1]), ("nuclides", "years"))
 	#writetable(nv_name * "/" * string(get_years()[l]) * "_" * clearance_paths * ".csv", nv, separator=';')
-end
-
-#######################################################
-# test NV
-
-function test_nv(tf::AbstractString)
-	global settings = YAML.load(open(tf));
-	global nvdb = SQLite.DB(settings["db_name"]);
-	global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
-
-	a, ∑Co60Eq, f, ɛ = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts |> calc_factors
-
-	full_list_nv = get_pre_nv()
-
-	f_nv = f * full_list_nv
-	ɛ_nv = nable2arr(ɛ) * full_list_nv
-
-	fmx, list_∑Co60Eq = determine_list_∑Co60Eq()
-
-	for r in list_∑Co60Eq
-		for l in get_years()
-			print_with_color(:green, string(names(ɛ)[1][r]) * ", " * string(l) * "\n")
-			println( print_ratio(∑Co60Eq, a, f_nv, ɛ_nv, l, r, fmx) )
-		end
-	end
-end
-
-function print_ratio(∑Co60Eq, a, f_nv, ɛ_nv, l, r, fmx)
-	ratio = NamedArray(Array(Float64, length(fmx[r]), size(a, 1)),
-					(fmx[r], names(a)[1]),
-					("path", "sample"));
-
-	for j = 1:size(a, 1)
-		i = 1
-		for k in fmx[r]
-			ratio[i, j] = ∑Co60Eq[j,r,l] * a[j,k,l] * f_nv[k] ./ ɛ_nv[r]
-			i += 1
-		end
-	end
-	writedlm("OUTPUT.csv", ratio)
-	ratio, 1 .<= ratio
-end
-
-function get_pre_nv()
-	full_list_nv = zeros( length(nuclide_names), 1)
-	for nv in settings["nuclide_vector"]
-		nv_tmp = split(nv)
-		full_list_nv[ find(nuclide_names .== nv_tmp[1])[1] ] = float(nv_tmp[3]) * 100
-	#	rhs = float(nv_tmp[3]) * 100
-	end
-	if sum(full_list_nv) != 10_000
-		error("Nuclide vector sum is not 1!")
-	end
-	return full_list_nv
 end

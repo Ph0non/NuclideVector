@@ -53,5 +53,6 @@ function copy2clipboard_clearance()
     s *= "\n"
   end
   clipboard(s)
+  return s
 end
 @qmlfunction copy2clipboard_clearance
