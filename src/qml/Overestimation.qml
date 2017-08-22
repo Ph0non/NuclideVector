@@ -3,6 +3,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.1
 import org.julialang 1.0
+// import "lodash.js" as Lodash
 
 Window {
     width: 800
@@ -64,13 +65,15 @@ Window {
 
                 onModelChanged: view_overestimate1.update_columns()
 
-//                itemDelegate: Text {
-//                    anchors.verticalCenter: parent.verticalCenter
-//                    color:
-//                    get(styleData.row).role < 1 ? "red" : "green"
-//                    text: styleData.value
-//                }
-
+                itemDelegate: Text {
+                  anchors.fill: parent
+                  verticalAlignment: Text.AlignVCenter
+                  horizontalAlignment: styleData.textAlignment
+                  anchors.leftMargin: 12
+                  property variant value: styleData.value
+                  text: (isInt(styleData.value)) ? styleData.value : styleData.value.toFixed(4)
+                  color: (isInt(styleData.value)) ? "black" : (styleData.value < 1) ? "red" : "green"
+               }
             }
 
             Component
@@ -102,6 +105,16 @@ Window {
                 }
 
                 onModelChanged: view_overestimate2.update_columns()
+
+                itemDelegate: Text {
+                  anchors.fill: parent
+                  verticalAlignment: Text.AlignVCenter
+                  horizontalAlignment: styleData.textAlignment
+                  anchors.leftMargin: 12
+                  property variant value: styleData.value
+                  text: (isInt(styleData.value)) ? styleData.value : styleData.value.toFixed(4)
+                  color: (isInt(styleData.value)) ? "black" : (styleData.value < 1) ? "red" : "green"
+               }
             }
 
             Component

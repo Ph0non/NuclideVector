@@ -12,6 +12,14 @@ ApplicationWindow {
     title: qsTr("Nuklidvektor berechnen")
     id: mainWindow
 
+    function isInt(value) {
+      if (isNaN(value)) {
+        return false;
+      }
+      var x = parseFloat(value);
+      return (x | 0) === x;
+    }
+
     function itemIndex(item) {
         if (item.parent === null)
             return -1
