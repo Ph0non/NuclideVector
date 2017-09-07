@@ -110,7 +110,7 @@ end
 # check for sanity
 function sanity_check()
   arr = ListModel2NamedArray(nuclides)
-  san_idx = find( round( sum(arr,1).array .- 100, 2) )
+  san_idx = find( round.( sum(arr,1).array .- 100, 2) )
   if isempty(san_idx)
     return true
   else
