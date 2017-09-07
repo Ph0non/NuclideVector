@@ -25,7 +25,7 @@ include("../src/testnv.jl")
 # clearance
 include("../src/clearance.jl")
 
-years = ["2016", "2017", "2018"]
+years = [2016, 2017, 2018]
 rel_nuclides3 = [Constraint("Co60", "NONE", 0, 1)
                  Constraint("Cs137", ">=", 5, 1)
                  Constraint("Ni63", "==", 10, 1)

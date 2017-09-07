@@ -1,6 +1,6 @@
 # NuclideVector
 
-julia-release: [![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector) [![Build status](https://ci.appveyor.com/api/projects/status/d97d0jnxrx9r50bn/branch/master?svg=true)](https://ci.appveyor.com/project/Ph0non/nuclidevector/branch/master) [![codecov](https://codecov.io/gh/Ph0non/NuclideVector/branch/master/graph/badge.svg)](https://codecov.io/gh/Ph0non/NuclideVector) 
+julia-release (v0.6): [![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector) [![Build status](https://ci.appveyor.com/api/projects/status/d97d0jnxrx9r50bn/branch/master?svg=true)](https://ci.appveyor.com/project/Ph0non/nuclidevector/branch/master) [![codecov](https://codecov.io/gh/Ph0non/NuclideVector/branch/master/graph/badge.svg)](https://codecov.io/gh/Ph0non/NuclideVector) 
 
 
 This package provides a comfortable way to calculate conservative nuclide vectors in accordance with the german Radiation Protection Ordinance.

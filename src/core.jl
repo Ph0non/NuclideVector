@@ -10,7 +10,7 @@ using QML
 # helper functions
 
 nvdb = SQLite.DB("nvdb-v2.sqlite")
-global nuclide_names = convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
+global nuclide_names = convert(Array{String}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]);
 
 function travec(x::Array{Date,1})
 	reshape(x, 1, length(x))
@@ -82,7 +82,7 @@ function get_years()
 	collect(genSettings.year[1] : genSettings.year[2])  |> sort
 end
 
-reduce_factor(q) = q[:, convert(Array{String, 1}, rel_nuclides)]
+reduce_factor(q) = q[:, convert(Array{String}, rel_nuclides)]
 
 function del_zero_from_table()
 	for i in nuclide_names
@@ -98,8 +98,8 @@ end
 function ListModel2NamedArray(lm::Array)
   y = map(x -> parse(x), years)
 
-  n = Array(String, length(lm))
-  arr = Array(Float64, length(lm), length(y) )
+  n = Array{String}(length(lm))
+  arr = Array{Float64}(length(lm), length(y) )
   for i = 1:length(lm)
     arr[i,:] = lm[i].values'
     n[i] = lm[i].name
@@ -159,10 +159,10 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	(month_, day_) = Dates.monthday(Dates.DateTime(ref_date, date_format))
 
 	tday_raw = travec([Date(years[1], month_, day_):Dates.Year(1):Date(years[end], month_, day_);]) .- sample_date; # calculate difference in days
-	tday = NamedArray(convert(Array{Int64,2}, tday_raw), (NamedArrays.names(samples, 1), years),  ("samples", "years") )
+	tday = NamedArray(map(x -> x.value, tday_raw), (NamedArrays.names(samples, 1), years),  ("samples", "years") )
 
 
-	samples_korr = NamedArray(Array(Float64, size(tday,1), size(samples,2), size(tday,2)),
+	samples_korr = NamedArray(Array{Float64}(size(tday,1), size(samples,2), size(tday,2)),
 					(NamedArrays.names(samples, 1), nuclide_names, years),
 					("samples", "nuclides", "year") );
 	for i in years
@@ -193,7 +193,7 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	(month_, day_) = Dates.monthday(Dates.DateTime(ref_date, date_format))
 
 	tday_raw = Date(years, month_, day_) .- sample_date # calculate difference in days
-	tday = NamedArray(convert(Array{Int64,2}, tday_raw), (NamedArrays.names(samples, 1), [years]),  ("samples", "years") )
+	tday = NamedArray(map(x -> x.value, tday_raw), (NamedArrays.names(samples, 1), [years]),  ("samples", "years") )
 
 
 	samples_korr = NamedArray(samples.array .* 2.^(-vec(tday.array) ./ hl),
@@ -214,13 +214,13 @@ function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,3,Array{Floa
 															Tuple{DataStructures.OrderedDict{Int64,Int64},
 															DataStructures.OrderedDict{String,Int64},
 															DataStructures.OrderedDict{Int64,Int64}}})
-	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
+	samples_korr./sum(samples_korr,2)
 end
 
 function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,Array{Float64,2},
 															Tuple{DataStructures.OrderedDict{Int64,Int64},
 															DataStructures.OrderedDict{String,Int64}}})
-	NamedArray( samples_korr./sum(samples_korr,2), samples_korr.dicts, samples_korr.dimnames)
+	samples_korr./sum(samples_korr,2)
 end
 
 function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
@@ -232,10 +232,10 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 	ɛ = read_db(nvdb, "efficiency");
 	f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames);
 
-	A = NamedArray(Array(Float64, size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
+	A = NamedArray(Array{Float64}(size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
 					(names(samples_part)[1], names(clearance_val)[1], get_years()),
 					("sample", "path", "years")); # path -> clearance path
-	∑Co60Eq = NamedArray(Array(Float64, size(samples_part,1), size(ɛ,1), size(samples_part,3)),
+	∑Co60Eq = NamedArray(Array{Float64}(size(samples_part,1), size(ɛ,1), size(samples_part,3)),
 					(names(samples_part)[1], names(ɛ)[1], get_years()),
 					("sample", "path", "years")); # path -> fma / fmb / is
 
@@ -259,10 +259,10 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 	ɛ = read_db(nvdb, "efficiency");
 	f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames);
 
-	A = NamedArray(Array(Float64, size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
+	A = NamedArray(Array{Float64}(size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
 					(names(samples_part)[1], names(clearance_val)[1], __years__),
 					("sample", "path", "years")); # path -> clearance path
-	∑Co60Eq = NamedArray(Array(Float64, size(samples_part,1), size(ɛ,1), size(samples_part,3)),
+	∑Co60Eq = NamedArray(Array{Float64}(size(samples_part,1), size(ɛ,1), size(samples_part,3)),
 					(names(samples_part)[1], names(ɛ)[1], __years__),
 					("sample", "path", "years")); # path -> fma / fmb / is
 
@@ -287,7 +287,7 @@ function get_nv()
 	np = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts
 	a, ∑Co60Eq, f, ɛ = np |> calc_factors
 
-	(nv = Array(Float64, length(rel_nuclides), size(a,3)-1); i = 1);
+	(nv = Array{Float64}(length(rel_nuclides), size(a,3)-1); i = 1);
 
 
 	ymin = get_years()[1]
@@ -300,7 +300,7 @@ function get_nv()
 end
 
 function determine_list_∑Co60Eq()
-	list_∑Co60Eq = Array(Int, 0)
+	list_∑Co60Eq = Array{Int}(0)
 
 	for i in ["fma", "fmb", "is"]
 		if !isempty( find(i .== genSettings.co60eq) )
@@ -379,7 +379,7 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 	if sstatus == :Infeasible
 		return zeros(length(x))
 	elseif sstatus == :Optimal
-		return round(getvalue(x)./100, 2)
+		return round.(getvalue(x)./100, 2)
 	end
 
 end
