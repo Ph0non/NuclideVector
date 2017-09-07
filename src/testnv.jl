@@ -25,11 +25,11 @@ function test_nv_gui(y::String, fmx_ind::Int32)
 
 	list_∑Co60Eq = determine_list_∑Co60Eq()
 
-  global ratio1 = NamedArray(Array(Float64, size(a, 1), length(fmx[fmx_ind])),
+  global ratio1 = NamedArray(Array{Float64}(size(a, 1), length(fmx[fmx_ind])),
   				( map(x->string(x),names(a)[1]), fmx[fmx_ind]),
   				("name", "path"))
 
-  global ratio2 = NamedArray(Array(Float64, size(a, 1), length(fmx[fmx_ind])),
+  global ratio2 = NamedArray(Array{Float64}(size(a, 1), length(fmx[fmx_ind])),
         	( map(x->string(x),names(a)[1]), fmx[fmx_ind]),
         	("name", "path"))
 

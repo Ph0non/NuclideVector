@@ -25,7 +25,7 @@ include("../src/testnv.jl")
 # clearance
 include("../src/clearance.jl")
 
-years = ["2016", "2017", "2018"]
+years = ["2016", "2017", "2018"] # only for tests as strings (sanity_check() will fail if not)
 rel_nuclides3 = [Constraint("Co60", "NONE", 0, 1)
                  Constraint("Cs137", ">=", 5, 1)
                  Constraint("Ni63", "==", 10, 1)
@@ -88,8 +88,8 @@ facts("calculations (with optimization target 'mean')") do
 end
 
 facts("variables") do
-  @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2])[3] --> "Co60"
-  @fact convert(Array{String,1}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]) --> ["Mn54","Co57","Co60","Zn65","Nb94","Ru106","Ag108m","Ag110m","Sb125","Cs134","Cs137","Ba133","Ce144","Eu152","Eu154","Eu155","Fe55","Ni63","Sr90","U234","U238","U235","Pu239Pu240","Pu238","Pu241","Am241","Cm242","Cm244","Ni59","H3","U233"]
+  @fact convert(Array{String}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2])[3] --> "Co60"
+  @fact convert(Array{String}, SQLite.query(nvdb, "pragma table_info(halflife)")[:,2]) --> ["Mn54","Co57","Co60","Zn65","Nb94","Ru106","Ag108m","Ag110m","Sb125","Cs134","Cs137","Ba133","Ce144","Eu152","Eu154","Eu155","Fe55","Ni63","Sr90","U234","U238","U235","Pu239Pu240","Pu238","Pu241","Am241","Cm242","Cm244","Ni59","H3","U233"]
   @fact nable2arr(read_db(nvdb, "efficiency")[:,["Mn54", "Co60"]].array)[:,1] --> roughly([0.4585,2.30769,1.0], atol=1E-5)
 
   @fact get_genSettings_name("A02") --> "A02"
@@ -163,7 +163,7 @@ function ==(a::Constraint, b::Constraint)
   a.weight == b.weight])
 end
 
-rel_nuclides3 = Array(Constraint, 0)
+rel_nuclides3 = Array{Constraint}(0)
 facts("check constraints") do
   @fact get_rel_nuc("Co60", "NONE", "", "")[end] --> Constraint("Co60", "NONE", 0, 1)
   @fact get_rel_nuc("Cs137", "<=", "10.5", "100")[end] --> Constraint("Cs137", "<=", 10.5, 100)
