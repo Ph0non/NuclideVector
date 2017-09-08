@@ -25,11 +25,7 @@ include("../src/testnv.jl")
 # clearance
 include("../src/clearance.jl")
 
-<<<<<<< HEAD
-years = [2016, 2017, 2018]
-=======
 years = ["2016", "2017", "2018"] # only for tests as strings (sanity_check() will fail if not)
->>>>>>> master
 rel_nuclides3 = [Constraint("Co60", "NONE", 0, 1)
                  Constraint("Cs137", ">=", 5, 1)
                  Constraint("Ni63", "==", 10, 1)
