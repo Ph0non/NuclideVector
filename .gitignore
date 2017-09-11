@@ -13,3 +13,6 @@ NV
 
 # Coverage
 *.cov
+
+# Logs
+*.log
