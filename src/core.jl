@@ -16,7 +16,7 @@ function travec(x::Array{Date,1})
 	reshape(x, 1, length(x))
 end
 
-function nable2arr(x)
+#= function nable2arr(x)
 	(el_i,el_j) = size(x)
 	y = Array{ typeof(x[1,1].value) }(el_i, el_j)
 	for j=1:el_j
@@ -25,17 +25,17 @@ function nable2arr(x)
 		end
 	end
 	return y
-end
+end =#
 
 function fill_wzero(x)
 	(el_i,el_j) = size(x)
 	y = Array{ Nullable{Float64} }(el_i, el_j)
 	for j=1:el_j
 		for i=1:el_i
-			if isnull(x[i, j])
+			if Missings.ismissing(x[i, j])
 				y[i, j] = 0
 			else
-				y[i, j] = x[i, j].value
+				y[i, j] = x[i, j]
 			end
 		end
 	end
@@ -62,7 +62,7 @@ function schema2arr(x::DataFrames.DataFrame)
 	y = Array(x)
 end
 
-function schema2arr(x::NullableArrays.NullableArray)
+function schema2arr(x)
 	y = Array(x)
 end
 
@@ -74,7 +74,7 @@ function read_db(nvdb::SQLite.DB, tab::String)
 	#nu_name = val.schema.header[2:end]
 	nu_name = Data.schema(val[2:end]).header
 	#path_names = val.data[1].values
-	path_names = [val[1][i].value for i=1:size(val, 1) ]
+	path_names = [val[1][i] for i=1:size(val, 1) ]
 	NamedArray(val_data, (path_names, nu_name), ("path", "nuclides"))
 end
 
@@ -91,7 +91,8 @@ function del_zero_from_table()
 end
 
 function get_sample_info(x::String)
-	nable2arr( schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") ) )
+	# nable2arr( schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") ) )
+	schema2arr( SQLite.query(nvdb, "select " * x * " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") )
 end
 
 # TODO make function more general
@@ -145,12 +146,12 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	hl_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names) * " from halflife");
 	hl = NamedArray(schema2arr(hl_raw), ([1], nuclide_names), ("halftime", "nuclides"))
 	## Workaround Typänderung SQLite
-	hl = NamedArray(convert(Array{Float64, 2}, [hl.array[i].value for i = 1:length(hl) ]'), ([1], nuclide_names), ("halftime", "nuclides") )
+	#hl = NamedArray(convert(Array{Float64, 2}, [hl.array[i].value for i = 1:length(hl) ]'), ([1], nuclide_names), ("halftime", "nuclides") )
 
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero #|> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
@@ -166,10 +167,9 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 					(NamedArrays.names(samples, 1), nuclide_names, years),
 					("samples", "nuclides", "year") );
 	for i in years
-		samples_korr[:,:,i] =  samples.array .* 2.^(-tday[:,i].array ./ hl);
+		samples_korr[:,:,i] =  get.(samples.array) .* 2.^(-tday[:,i].array ./ hl);
 		# Am241 and Pu241 must be in sample nuclide_names
-		samples_korr[:,"Am241",i] = Array(samples_korr[:,"Am241",i]) + Array(samples[:, "Pu241"]) .* hl[1,"Pu241"]./(hl[1,"Pu241"] - hl[1,"Am241"]) .*
-											(2.^(-tday[:,i].array ./ hl[1,"Pu241"]) - 2.^(-tday[:,i].array ./ hl[1,"Am241"]))
+		samples_korr[:,"Am241",i] = Array(samples_korr[:,"Am241",i]) + get.(samples[:, "Pu241"]).array .* hl[1,"Pu241"]./(hl[1,"Pu241"] - hl[1,"Am241"]) .*	(2.^(-tday[:,i].array ./ hl[1,"Pu241"]) - 2.^(-tday[:,i].array ./ hl[1,"Am241"]))
 	end
 
 	return samples_korr
@@ -179,12 +179,12 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	hl_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names) * " from halflife");
 	hl = NamedArray(schema2arr(hl_raw), ([1], nuclide_names), ("halftime", "nuclides"))
 	## Workaround Typänderung SQLite
-	hl = NamedArray(convert(Array{Float64, 2}, [hl.array[i].value for i = 1:length(hl) ]'), ([1], nuclide_names), ("halftime", "nuclides") )
+	#hl = NamedArray(convert(Array{Float64, 2}, [hl.array[i].value for i = 1:length(hl) ]'), ([1], nuclide_names), ("halftime", "nuclides") )
 
 	sample_date = map(x->Date(x, "dd.mm.yyyy"), get_sample_info("date") )
 	sample_id = get_sample_info("s_id") |> vec
 
-	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero |> nable2arr
+	global	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = '" * genSettings.name *"'") |> fill_wzero #|> nable2arr
 
 	samples = NamedArray( samples_raw, (sample_id, nuclide_names), ("samples", "nuclides"))
 
@@ -196,11 +196,11 @@ function decay_correction(nvdb::SQLite.DB, nuclide_names::Array{String, 1}, year
 	tday = NamedArray(map(x -> x.value, tday_raw), (NamedArrays.names(samples, 1), [years]),  ("samples", "years") )
 
 
-	samples_korr = NamedArray(samples.array .* 2.^(-vec(tday.array) ./ hl),
+	samples_korr = NamedArray(get.(samples.array) .* 2.^(-vec(tday.array) ./ hl),
 					(NamedArrays.names(samples, 1), nuclide_names),
 					("samples", "nuclides") )
 		# Am241 and Pu241 must be in sample nuclide_names
-	samples_korr[:,"Am241"] = Array(samples_korr[:,"Am241"]) + Array(samples[:, "Pu241"]) .*
+	samples_korr[:,"Am241"] = Array(samples_korr[:,"Am241"]) + get.(samples[:, "Pu241"]).array .*
 														hl[1,"Pu241"]./(hl[1,"Pu241"] - hl[1,"Am241"]) .*
 														(2.^(-vec(tday.array) ./ hl[1,"Pu241"]) - 2.^(-vec(tday.array) ./ hl[1,"Am241"]))
 
@@ -211,26 +211,26 @@ end
 # relevant nuclides and calculations
 
 function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
-															Tuple{DataStructures.OrderedDict{Int64,Int64},
-															DataStructures.OrderedDict{String,Int64},
-															DataStructures.OrderedDict{Int64,Int64}}})
+															Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}})
 	samples_korr./sum(samples_korr,2)
 end
 
-function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,Array{Float64,2},
-															Tuple{DataStructures.OrderedDict{Int64,Int64},
-															DataStructures.OrderedDict{String,Int64}}})
+function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,NamedArrays.NamedArray{Float64,2,Array{Float64,2},
+															Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{String,Int64}}},Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},DataStructures.OrderedDict{String,Int64}}})
 	samples_korr./sum(samples_korr,2)
+end
+
+function nuclide_parts(samples_korr::NamedArrays.NamedArray{Float64,2,NamedArrays.NamedArray{Float64,2,Array{Float64,2},
+															Tuple{DataStructures.OrderedDict{Int64,Int64},DataStructures.OrderedDict{String,Int64}}},Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},DataStructures.OrderedDict{String,Int64}}})
+samples_korr./sum(samples_korr,2)
 end
 
 function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
-												Tuple{DataStructures.OrderedDict{Int64,Int64},
-												DataStructures.OrderedDict{String,Int64},
-												DataStructures.OrderedDict{Int64,Int64}}})
+															Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}})
 	clearance_val = read_db(nvdb, "clearance_val");
 
 	ɛ = read_db(nvdb, "efficiency");
-	f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames);
+	f = NamedArray( 1./clearance_val, clearance_val.dicts, clearance_val.dimnames);
 
 	A = NamedArray(Array{Float64}(size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
 					(names(samples_part)[1], names(clearance_val)[1], get_years()),
@@ -239,7 +239,8 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 					(names(samples_part)[1], names(ɛ)[1], get_years()),
 					("sample", "path", "years")); # path -> fma / fmb / is
 
-	(fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
+	(fᵀ = f'; ɛᵀ = ɛ');
+	# (fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
 	for i in get_years()
 		A[:,:,i] = samples_part[:,:,i].array * fᵀ
 		∑Co60Eq[:,:,i] = samples_part[:,:,i].array * ɛᵀ # sum of Co60-equiv. also contain non measureable nuclides
@@ -250,14 +251,14 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 end
 
 function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float64,3},
-												Tuple{DataStructures.OrderedDict{Int64,Int64},
-												DataStructures.OrderedDict{String,Int64},
-												DataStructures.OrderedDict{Int64,Int64}}}, __years__::Array)
+									Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},
+									DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}},
+									__years__::Array)
 
 	clearance_val = read_db(nvdb, "clearance_val");
 
 	ɛ = read_db(nvdb, "efficiency");
-	f = NamedArray( 1./nable2arr(clearance_val), clearance_val.dicts, clearance_val.dimnames);
+	f = NamedArray( 1./clearance_val, clearance_val.dicts, clearance_val.dimnames);
 
 	A = NamedArray(Array{Float64}(size(samples_part,1), size(clearance_val,1), size(samples_part,3)),
 					(names(samples_part)[1], names(clearance_val)[1], __years__),
@@ -266,7 +267,8 @@ function calc_factors(samples_part::NamedArrays.NamedArray{Float64,3,Array{Float
 					(names(samples_part)[1], names(ɛ)[1], __years__),
 					("sample", "path", "years")); # path -> fma / fmb / is
 
-	(fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
+	(fᵀ = f'; ɛᵀ = ɛ');
+	# (fᵀ = f'; ɛᵀ = nable2arr(ɛ)');
 	for i in __years__
 		A[:,:,i] = samples_part[:,:,i].array * fᵀ
 		∑Co60Eq[:,:,i] = samples_part[:,:,i].array * ɛᵀ # sum of Co60-equiv. also contain non measureable nuclides
@@ -326,17 +328,16 @@ end
 
 
 function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
-									Tuple{DataStructures.OrderedDict{Int64,Int64},
-									DataStructures.OrderedDict{String,Int64},
-									DataStructures.OrderedDict{Int64,Int64}}},
-				   T2<:NamedArrays.NamedArray{Float64,2,Array{Float64,2},
-									Tuple{DataStructures.OrderedDict{String,Int64},
-									DataStructures.OrderedDict{String,Int64}}},
-				   T3<:NamedArrays.NamedArray{Nullable,2,Array{Nullable,2},
-									Tuple{DataStructures.OrderedDict{String,Int64},
-									DataStructures.OrderedDict{String,Int64}}} }(
+											Tuple{DataStructures.OrderedDict{Union{Int64, Missings.Missing},Int64},
+											DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{Int64,Int64}}},
+				   T2<:NamedArrays.NamedArray{Float64,2,NamedArrays.NamedArray{Float64,2,Array{Float64,2},
+											   Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{String,Int64}}},
+											   Tuple{DataStructures.OrderedDict{String,Int64},DataStructures.OrderedDict{String,Int64}}},
+				   T3<:NamedArrays.NamedArray{Any,2,Array{Any,2},
+											   Tuple{DataStructures.OrderedDict{String,Int64},
+											   DataStructures.OrderedDict{String,Int64}}} }(
 				   l::Int, a::T1, ∑Co60Eq::T1, f_red::T2, ɛ_red::T3, np::T1, mean_weight::Vector{Float64} )
-	ɛ_red = nable2arr(ɛ_red);
+	# ɛ_red = nable2arr(ɛ_red);
 	m=Model(solver = CbcSolver());
 	@variable(m, 0 ≤ x[1:length(rel_nuclides)] ≤ 10_000, Int);
 
@@ -371,8 +372,9 @@ function solve_nv{ T1<:NamedArrays.NamedArray{Float64,3,Array{Float64,3},
 
 	for r in list_∑Co60Eq
 		# lower bound
-		@constraint(m, constr_lb[k in fmx[r], j in keys(a.dicts[1]), h=0:1], Co60eqnv[r] ≤ ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) )
+		@constraint(m, constr_lb[k in fmx[r], j = 1:size(a,1), h=0:1], Co60eqnv[r] ≤ ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) )
 	end
+		#@constraint(m, constr_lb[k in fmx[r], j in keys(a.dicts[1]), h=0:1], Co60eqnv[r] ≤ ∑Co60Eq[j,r,l+h] * a[j,k,l+h] * sum(f_red[k,i] * x[i] for i=1:length(rel_nuclides) ) )
 
 	sstatus = solve(m, suppress_warnings=true);
 

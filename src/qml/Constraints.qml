@@ -88,7 +88,7 @@ GroupBox {
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     Repeater {
-                        model: [ "H3", "Fe55", "Ni59", "Ni63", "Sr90", "Pu241" ]
+                        model: [ "H3", "C14", "Fe55", "Ni59", "Ni63", "Sr90", "Pu241" ]
 
                         RowLayout {
                             CheckBox {
