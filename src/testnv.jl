@@ -36,8 +36,8 @@ function test_nv_gui(y::String, fmx_ind::Int32)
 	for (index, j) in enumerate(names(a)[1])
 		i = 1
 		for k in fmx[fmx_ind]
-			ratio1[index, i] = ∑Co60Eq[j,fmx_ind,y] * a[j,k,y] * f_nv[k] ./ ɛ_nv[fmx_ind]
-      ratio2[index, i] = ∑Co60Eq[j,fmx_ind,y+1] * a[j,k,y+1] * f_nv[k] ./ ɛ_nv[fmx_ind]
+			ratio1[index, i] = ∑Co60Eq[index,fmx_ind,y] * a[index,k,y] * f_nv[k] ./ ɛ_nv[fmx_ind]
+      ratio2[index, i] = ∑Co60Eq[index,fmx_ind,y+1] * a[index,k,y+1] * f_nv[k] ./ ɛ_nv[fmx_ind]
 			i += 1
 		end
 	end
