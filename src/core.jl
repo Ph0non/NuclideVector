@@ -87,6 +87,14 @@ function read_db(nvdb::SQLite.DB, tab::String)
 	NamedArray(val_data, (path_names, nu_name), ("path", "nuclides"))
 end
 
+function get_nuclide_types(t::String)
+	 map(y -> String(y), SQLite.query(nvdb,  "select nuclide from nuclide_decayType where decayType = '" * t * "'" ) |> schema2arr )
+end
+
+function find_index_nuclide_types(t::String)
+	find( [rel_nuclides[i] in get_nuclide_types(t) for i=1:length(rel_nuclides) ] )
+end
+
 function get_years()
 	collect(genSettings.year[1] : genSettings.year[2])  |> sort
 end
@@ -392,15 +400,15 @@ function add_user_constraints_GUI(m::JuMP.Model, x::Array{JuMP.Variable,1})
 end
 
 function add_additional_constraints(m::JuMP.Model, x::Array{JuMP.Variable,1})
-	gamma_nuclides = map(y -> String(y), SQLite.query(nvdb,  "select nuclide from nuclide_decayType where decayType = 'gamma'" ) |> schema2arr )
-	sg_index = find( [rel_nuclides[i] in gamma_nuclides for i=1:length(rel_nuclides) ] )
-	for i=1:length(additional_constraints)
-		if additional_constraints[i].relation == "<="
-			@constraint(m, sum( x[ sg_index ] ) <= additional_constraints[i].limit * 100)
-		elseif additional_constraints[i].relation == ">="
-			@constraint(m, sum( x[ sg_index ] ) >= additional_constraints[i].limit * 100)
-		elseif additional_constraints[i].relation == "=="
-			@constraint(m, sum( x[ sg_index ] ) == additional_constraints[i].limit * 100)
+	d = Dict([ ("∑γ", "gamma"), ("∑β+ec", "beta"), ("∑α", "alpha")  ])
+
+	for (index, i) in enumerate( [additional_constraints[j].name for j=1:length(additional_constraints) ] )
+		if additional_constraints[index].relation == "<="
+			@constraint(m, sum( x[ find_index_nuclide_types( d[i] ) ] ) <= additional_constraints[index].limit * 100)
+		elseif additional_constraints[index].relation == ">="
+			@constraint(m, sum( x[ find_index_nuclide_types( d[i] ) ] ) >= additional_constraints[index].limit * 100)
+		elseif additional_constraints[index].relation == "=="
+			@constraint(m, sum( x[ find_index_nuclide_types( d[i] ) ] ) == additional_constraints[index].limit * 100)
 		end
 	end
 end

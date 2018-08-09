@@ -29,7 +29,7 @@ GroupBox {
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
                 Repeater {
-                    model: [ "U234", "U235", "U238", "Pu238", "Pu239Pu240", "Am241", "Cm242", "Cm244" ]
+                    model: [ "U234", "U235", "U238", "Pu238", "Pu239Pu240", "Am241", "Cm242", "Cm244", "<b>∑α</b>" ]
 
                     RowLayout {
                         CheckBox {
@@ -88,7 +88,7 @@ GroupBox {
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter
                     Repeater {
-                        model: [ "H3", "C14", "Fe55", "Ni59", "Ni63", "Sr90", "Pu241" ]
+                        model: [ "H3", "C14", "Fe55", "Ni59", "Ni63", "Sr90", "Pu241", "<b>∑β+ec</b>"]
 
                         RowLayout {
                             CheckBox {
@@ -148,7 +148,8 @@ GroupBox {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.rightMargin: 0
                     Repeater {
-                        model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155", "∑γ"] ]
+                        model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155", "<b>∑γ</b>"] ]
+
                         Column {
 
                             Repeater {
