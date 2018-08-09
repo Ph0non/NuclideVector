@@ -48,7 +48,7 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
 
   y = parse(y)
   np = decay_correction(nvdb, nuclide_names, y ) |> nuclide_parts
-  np.array .*= 100
+  np.array.array .*= 100
   samples_row = ["Min"; "Mittel"; "Max"; map(x->string(x), names(np)[1])]
 
   s *= "\t"
@@ -64,7 +64,7 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
                                             string(mean(np[:, val].array) ) * "\t" *
                                             string(maximum(np[:, val].array) ) * "\t"
       for i in names(np, 1)
-        s *= replace(string(np[i, val] * 100), ".", ",") * "\t"
+        s *= replace(string(np[i, val]), ".", ",") * "\t"
       end
       s *= "\n"
     end
@@ -74,7 +74,7 @@ function copy2clipboard_decay(y::String, show_relnuc::Bool)
                                             string(mean(np.array[:, j]) ) * "\t" *
                                             string(maximum(np.array[:, j]) ) * "\t"
       for i=1:size(np, 1)
-        s *= replace(string(np.array[i, j] * 100), ".", ",") * "\t"
+        s *= replace(string(np.array[i, j]), ".", ",") * "\t"
       end
       s *= "\n"
     end

@@ -32,13 +32,13 @@ end
 @qmlfunction get_genSettings_target
 
 
-global fmx = [Array{String}(0), Array{String}(0), Array{String}(0)]
+global fmx = [Array{String}(0), Array{String}(0), Array{String}(0), Array{String}(0), Array{String}(0)]
 function update_clearance_path(x::String, checked::Bool, id::String)
   if checked
-    push!(fmx[ find( id .== ["fma","fmb","is"] )[1] ], x)
+    push!(fmx[ find( id .== ["fma","mc","como","lb124","is"] )[1] ], x)
   else
-    deleteat!(fmx[ find( id .== ["fma","fmb","is"] )[1] ],
-        find( fmx[ find( id .== ["fma","fmb","is"] )[1] ] .== x) )
+    deleteat!(fmx[ find( id .== ["fma","mc","como","lb124","is"] )[1] ],
+        find( fmx[ find( id .== ["fma","mc","como","lb124","is"] )[1] ] .== x) )
   end
 end
 @qmlfunction update_clearance_path

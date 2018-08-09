@@ -98,40 +98,100 @@ GroupBox {
                     Layout.fillHeight: true
                     title: "Freigabeverfahren"
 
-                    Row {
+
+                    Column {
+                      anchors.horizontalCenter: parent.horizontalCenter
+
+                      Grid {
+                        // anchors.horizontalCenter: parent.horizontalCenter
+                        // anchors.verticalCenter: groupBox3.verticalCenter
+                        // effectiveHorizontalItemAlignment: Grid.AlignHCenter
+                        verticalItemAlignment: AlignVCenter
+                        columns: 3
+                        rowSpacing: 10
+
+                        CheckBox {
+                          text: "Freimessanlage"
+                          checked: true
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fma", true) : Julia.get_genSettings_co60eq("fma", false)
+                          }
+
+                        CheckBox {
+                          text: "in-situ"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("is", true) : Julia.get_genSettings_co60eq("is", false)
+                          }
+
+                        Label {
+                          text: " "
+                        }
+
+                        CheckBox {
+                          text: "MicroCont"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("mc", true) : Julia.get_genSettings_co60eq("mc", false)
+                          }
+
+                        CheckBox {
+                          text: "CoMo"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("como", true) : Julia.get_genSettings_co60eq("como", false)
+                          }
+
+                        CheckBox {
+                          text: "LB124"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("lb124", true) :  Julia.get_genSettings_co60eq("lb124", false)
+                          }
+                        }
+                      }
+                  }
+/*                    Column {
+                      anchors.horizontalCenter: parent.horizontalCenter
+
+                      Row {
                         anchors.horizontalCenter: parent.horizontalCenter
                         CheckBox {
-                            text: "Freimessanlage"
-                            checked: true
-                            onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fma", true) : Julia.get_genSettings_co60eq("fma", false)
+                          text: "Freimessanlage"
+                          checked: true
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fma", true) : Julia.get_genSettings_co60eq("fma", false)
                         }
 
                         CheckBox {
-                            text: "Freimessbereich"
-                            onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("fmb", true) : Julia.get_genSettings_co60eq("fmb", false)
+                          text: "in-situ"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("is", true) : Julia.get_genSettings_co60eq("is", false)
+                        }
+                      }
+
+                      Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        CheckBox {
+                          text: "MicroCont"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("mc", true) : Julia.get_genSettings_co60eq("mc", false)
                         }
 
                         CheckBox {
-                            text: "in-situ"
-                            onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("is", true) : Julia.get_genSettings_co60eq("is", false)
+                          text: "CoMo"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("como", true) : Julia.get_genSettings_co60eq("como", false)
+                        }
+
+                        CheckBox {
+                          text: "LB124"
+                          onCheckedChanged: checked == true ? Julia.get_genSettings_co60eq("lb", true) : Julia.get_genSettings_co60eq("lb", false)
                         }
                     }
+                  }*/
 
-                }
 
                 GroupBox {
-                    id: groupBox4
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.fillWidth: true
-                    title: "Optimierungsziel"
+                  id: groupBox4
+                  Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                  Layout.fillWidth: true
+                  title: "Optimierungsziel"
 
-                    ComboBox {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        model: ot_list
-                        onCurrentTextChanged: Julia.get_genSettings_target(currentText)
+                  ComboBox {
+                      anchors.horizontalCenter: parent.horizontalCenter
+                      model: ot_list
+                      onCurrentTextChanged: Julia.get_genSettings_target(currentText)
                     }
-                }
-
+                  }
             }
         }
         ///////////////
@@ -146,7 +206,7 @@ GroupBox {
 
             Grid {
                 anchors.horizontalCenter: parent.horizontalCenter
-                columns: 12
+                columns: 13
                 rowSpacing: 10
 
                 Text {
@@ -156,7 +216,7 @@ GroupBox {
 
                 Repeater {
                     id: repeater_fma
-                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c", "1a*"]
                     CheckBox {
                         text: modelData
                         onCheckedChanged: Julia.update_clearance_path(text, checked, firstItem(this).objectName )
@@ -164,13 +224,41 @@ GroupBox {
                 }
 
                 Text {
-                    text: "Freimessbereich"
-                    objectName: "fmb"
+                    text: "MicroCont"
+                    objectName: "mc"
                 }
 
                 Repeater {
-                    id: repeater_fmb
-                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                    id: repeater_mc
+                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c", "1a*"]
+                    CheckBox {
+                        text: modelData
+                        onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
+                    }
+                }
+
+                Text {
+                    text: "CoMo"
+                    objectName: "como"
+                }
+
+                Repeater {
+                    id: repeater_como
+                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c", "1a*"]
+                    CheckBox {
+                        text: modelData
+                        onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
+                    }
+                }
+
+                Text {
+                    text: "LB124"
+                    objectName: "lb124"
+                }
+
+                Repeater {
+                    id: repeater_lb124
+                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c", "1a*"]
                     CheckBox {
                         text: modelData
                         onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
@@ -184,21 +272,30 @@ GroupBox {
 
                 Repeater {
                     id: repeater_is
-                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c"]
+                    model: ["OF", "1a", "2a", "3a", "4a", "1b", "2b", "3b", "4b", "5b", "6b_2c", "1a*"]
                     CheckBox {
                         text: modelData
                         onCheckedChanged: Julia.update_clearance_path(text, checked, nextItem(this, -1-index).objectName)
                     }
                 }
 
+                // set some free release paths as standard
                 Component.onCompleted: {
-                    var idx_fma = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10]
+                    var idx_fma = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11]
                     for (var i = 0; i < idx_fma.length; i++)
                         repeater_fma.itemAt( idx_fma[i] ).checked = true
 
-                    var idx_fmb = [0, 1, 4, 9, 10]
-                    for (var i = 0; i < idx_fmb.length; i++)
-                        repeater_fmb.itemAt( idx_fmb[i] ).checked = true
+                    var idx_mc = [0, 1, 4, 9, 10]
+                    for (var i = 0; i < idx_mc.length; i++)
+                        repeater_mc.itemAt( idx_mc[i] ).checked = true
+
+                    var idx_como = [0, 1, 4, 9, 10]
+                    for (var i = 0; i < idx_como.length; i++)
+                        repeater_como.itemAt( idx_como[i] ).checked = true
+
+                    var idx_lb124 = [0, 1, 4, 9, 10]
+                    for (var i = 0; i < idx_lb124.length; i++)
+                        repeater_lb124.itemAt( idx_lb124[i] ).checked = true
 
                     var idx_is = [0, 4, 9, 10]
                     for (var i = 0; i < idx_is.length; i++)

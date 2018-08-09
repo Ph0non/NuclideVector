@@ -21,23 +21,23 @@ function test_nv_gui(y::String, fmx_ind::Int32)
   end
 
   f_nv = f[:,rel_nuclides] * ListModel2NamedArray(nuclides)[:, y]
-  ɛ_nv = nable2arr(ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
+  ɛ_nv = (ɛ[:,rel_nuclides]) * ListModel2NamedArray(nuclides)[:, y]
 
-	list_∑Co60Eq = determine_list_∑Co60Eq()
+  list_∑Co60Eq = determine_list_∑Co60Eq()
 
   global ratio1 = NamedArray(Array{Float64}(size(a, 1), length(fmx[fmx_ind])),
   				( map(x->string(x),names(a)[1]), fmx[fmx_ind]),
   				("name", "path"))
 
   global ratio2 = NamedArray(Array{Float64}(size(a, 1), length(fmx[fmx_ind])),
-        	( map(x->string(x),names(a)[1]), fmx[fmx_ind]),
-        	("name", "path"))
+				( map(x->string(x),names(a)[1]), fmx[fmx_ind]),
+				("name", "path"))
 
 	for (index, j) in enumerate(names(a)[1])
 		i = 1
 		for k in fmx[fmx_ind]
-			ratio1[index, i] = ∑Co60Eq[j,fmx_ind,y] * a[j,k,y] * f_nv[k] ./ ɛ_nv[fmx_ind]
-      ratio2[index, i] = ∑Co60Eq[j,fmx_ind,y+1] * a[j,k,y+1] * f_nv[k] ./ ɛ_nv[fmx_ind]
+			ratio1[index, i] = ∑Co60Eq[index,fmx_ind,y] * a[index,k,y] * f_nv[k] ./ ɛ_nv[fmx_ind]
+            ratio2[index, i] = ∑Co60Eq[index,fmx_ind,y+1] * a[index,k,y+1] * f_nv[k] ./ ɛ_nv[fmx_ind]
 			i += 1
 		end
 	end
@@ -46,9 +46,14 @@ function test_nv_gui(y::String, fmx_ind::Int32)
   fmx_row = fmx[fmx_ind]
   @qmlset qmlcontext().fmx_row = fmx_row
 
-  sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+  if genSettings.name == "ALLE"
+      sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("NV||'-'||s_id") ) ) ]
+      sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("NV||'-'||s_id") ) ) ]
+  else
+      sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+      sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+  end
   sampleModel = ListModel(sampleOverestimate)
-  sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
   sampleModel_eoy = ListModel(sampleOverestimate_eoy)
 
   # add roles manually:
@@ -62,10 +67,10 @@ function test_nv_gui(y::String, fmx_ind::Int32)
 end
 @qmlfunction test_nv_gui
 
-fmx_row = ["OF","1a","2a","4a","1b","2b","3b","4b","5b","6b_2c"]
-sampleOverestimate = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
+fmx_row = ["OF","1a","2a","4a","1b","2b","3b","4b","5b","6b_2c", "1a*"]
+sampleOverestimate = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3", "4"] ]
 sampleModel = ListModel(sampleOverestimate)
-sampleOverestimate_eoy = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3"] ]
+sampleOverestimate_eoy = [Overestimate(name, zeros(length(fmx_row))) for name in ["1", "2", "3", "4"] ]
 sampleModel_eoy = ListModel(sampleOverestimate_eoy)
   # add roles manually:
 for (i,fmx_) in enumerate(fmx_row)
