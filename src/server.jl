@@ -32,7 +32,9 @@ function run_srvr(fmt, tport, async=false, open=false)
     # JuliaWebAPI.register(api, getNvListRaw; resp_json=true, resp_headers=Cross_origin_JSON)
     # JuliaWebAPI.register(api, getNvListDict; resp_json=true, resp_headers=Cross_origin_JSON)
     # JuliaWebAPI.register(api, getArray; resp_json=true, resp_headers=Cross_origin_JSON)
+
     JuliaWebAPI.register(api, getParameters; resp_json=true, resp_headers=Cross_origin_JSON)
+    JuliaWebAPI.register(api, __getNvList__; resp_json=true, resp_headers=Cross_origin_JSON)
 
     process(api; async=async)
 end

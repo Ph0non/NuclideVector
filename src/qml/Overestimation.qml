@@ -28,7 +28,7 @@ Window {
                 }
                 ComboBox {
                     id: overestimation_CB_fmx
-                    model: ["Freimessanlage", "Freimessbereich", "in-situ"]
+                    model: ["Freimessanlage", "MicroCont", "CoMo", "LB124", "in-situ"]
                     onCurrentIndexChanged: Julia.test_nv_gui( overestimation_CB_year.currentText, overestimation_CB_fmx.currentIndex )
                 }
 

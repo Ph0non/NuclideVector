@@ -4,8 +4,8 @@ type Clearance
   values::Vector{Float64}
 end
 
-#                    OF       1a      2a      3a      4a        1b      2b       3b     4b      5b       6b_2c
-clearance_unit = ["Bq/cm²", "Bq/g", "Bq/g", "Bq/g", "Bq/cm²", "Bq/g", "Bq/g", "Bq/g", "Bq/g", "Bq/cm²", "Bq/g" ]
+#                    OF       1a      2a      3a      4a        1b      2b       3b     4b      5b       6b_2c    5a
+clearance_unit = ["Bq/cm²", "Bq/g", "Bq/g", "Bq/g", "Bq/cm²", "Bq/g", "Bq/g", "Bq/g", "Bq/g", "Bq/cm²", "Bq/g", "Bq/g" ]
 
 function clearance_gui()
   np = decay_correction(nvdb, nuclide_names, get_years() ) |> nuclide_parts

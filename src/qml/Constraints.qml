@@ -24,7 +24,7 @@ GroupBox {
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
-            title: "alpha"
+            title: "α"
 
             Column {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -83,7 +83,7 @@ GroupBox {
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 Layout.fillWidth: true
-                title: "beta"
+                title: "β + ec"
 
                 Column {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -142,13 +142,13 @@ GroupBox {
                 Layout.fillHeight: true
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 Layout.fillWidth: true
-                title: "gamma"
+                title: "γ"
 
                 Row {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.rightMargin: 0
                     Repeater {
-                        model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155"] ]
+                        model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155", "∑γ"] ]
                         Column {
 
                             Repeater {
@@ -205,4 +205,3 @@ GroupBox {
         }
 
     }
-

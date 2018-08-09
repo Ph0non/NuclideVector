@@ -5,7 +5,7 @@ nv_list = SQLite.query(nvdb, "select NV from nv_summary") |> schema2arr |> vec |
 
 # exposed as property
 # ot_list = ["measure"; "mean"; SQLite.query(nvdb, "select path from clearance_val") |> schema2arr |> nable2arr |> vec ]
-ot_list = ["measure"; "mean"; SQLite.query(nvdb, "select path from clearance_val") |> schema2arr |> vec ]
+ot_list = ["Mittelwert"; "Messung FMA"; "Messung MicroCont"; "Messung CoMo"; "Messung LB124"; "Messung in-situ"; SQLite.query(nvdb, "select path from clearance_val") |> schema2arr |> vec ]
 # exposed as property
 year1_ctx = "2016"
 # exposed as property

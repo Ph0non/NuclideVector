@@ -6,11 +6,13 @@
 # end
 
 function schema2vec(x)
-    x |> schema2arr |> nable2arr |> vec
+    # x |> schema2arr |> nable2arr |> vec
+    x |> schema2arr |> vec
 end
 
 function __getNvList__()
-    SQLite.query(nvdb, "select NV from nv_summary") |> schema2vec
+    q = SQLite.query(nvdb, "select NV from nv_summary") |> schema2vec
+    [ Dict("value" => q[i], "label" => q[i]) for i=1:length(q) ]
 end
 
 function __getNuclidesList__(decayType::String)

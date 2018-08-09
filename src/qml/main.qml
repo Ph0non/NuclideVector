@@ -7,8 +7,8 @@ import org.julialang 1.0
 
 ApplicationWindow {
     visible: true
-    width: 1200
-    height: 700
+    width: 1300
+    height: 800
     title: qsTr("Nuklidvektor berechnen")
     id: mainWindow
 
@@ -185,6 +185,19 @@ ApplicationWindow {
                         var component = Qt.createComponent("Decay.qml")
                         win_decay = component.createObject(mainWindow)
                         win_decay.show()
+                    }
+                }
+
+                Button {
+                    text: qsTr("zu Z01 hinzufügen")
+                    Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: 100
+
+                    onClicked: {
+                        if (Julia.sanity_check() == true) {
+                          Julia.Z01_add()
+                        }
                     }
                 }
 

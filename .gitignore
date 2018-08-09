@@ -5,8 +5,10 @@ NV
 *.pro
 *.pro.user
 *.qrc
+*.qmlc
 
 .directory
+./vuejs
 
 # Bash
 *.sh

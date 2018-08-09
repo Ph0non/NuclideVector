@@ -1,55 +1,59 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+import ReactDOM from 'react-dom';
 import Select from 'react-select';
-import { fetchParams } from '../actions';
-// import 'react-select/dist/react-select.css';
+import axios from 'axios';
+import _ from 'lodash';
 
+class Data extends Component {
+  constructor(props) {
+   super(props);
 
-class App extends Component {
-  componentDidMount() {
-    this.props.fetchParams();
-  }
+   this.state = {
+     array: []
+   };
 
-/////////////////
-  state = {
-    selectedOption: '',
-  }
-  handleChange = (selectedOption) => {
-    this.setState({ selectedOption });
-    console.log(`Selected: ${selectedOption.label}`);
-  }
-//////////////////
+   this.renderNVList = this.renderNVList.bind(this);
+ }
 
-  render() {
-    if (!this.props.params) {
-      return  <div>Loading...</div>
-    }
+ componentDidMount(){
+   axios
+     .get('http://localhost:8888/__getNvList__/')
+     .then(({ data })=> {
+       console.log(data);
+       this.setState(
+         { array: data.data }
+       );
+     })
+     .catch((err)=> {})
+ }
 
-console.log(this.props.params);
-// console.log(this.props.params[0]);
+ render() {
+   console.log(this.state.array);
+   return(
+     <div>
+       <h3>Recipes</h3>
+       <Select
+         name = 'listNV'
+         value={this.state.array.value}
+         options={this.state.array.value}
+       />
+       <ul className="list-group">
+          {this.renderNVList()}
+       </ul>
+     </div>
+   );
+ }
 
-    const { selectedOption } = this.state;
-    const value = selectedOption && selectedOption.value;
-
-    return (
-      <div>React simple starter
-        <Select
-          name = 'listNV'
-          value={value}
-          options={this.props.params.listNv}
-        />
-        <ul>
-          <li>
-            {this.props.params.listNv}
-          </li>
-        </ul>
-      </div>
-    );
-  }
+ renderNVList() {
+   console.log(this.state.array);
+   return _.map(this.state.array, NVList => {
+     return (
+       <li className="list-group-item" key={NVList.value}>
+           {NVList.value}
+       </li>
+     );
+   });
+ }
 }
 
-function mapStatetoProps(state) {
-  return { params: state.params };
-}
-
-export default connect(mapStatetoProps, { fetchParams })(App);
+export default Data;
