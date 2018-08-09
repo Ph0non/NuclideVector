@@ -14,7 +14,6 @@ function get_rel_nuc(nuc_name::String, rel::String, limit::String, weight::Strin
   if nuc_name in nuclide_names
       push!(rel_nuclides3, Constraint(nuc_name, rel, limit, weight ) )
   else
-      # [4:end-5] -> remove <b>...</b>
       push!(additional_constraints, Constraint(nuc_name[4:end-4], rel, limit, weight ) )
   end
 end

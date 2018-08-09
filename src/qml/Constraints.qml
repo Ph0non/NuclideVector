@@ -149,6 +149,7 @@ GroupBox {
                     anchors.rightMargin: 0
                     Repeater {
                         model: [ ["Mn54", "Co57", "Co60", "Zn65", "Nb94", "Ru106", "Ag108m", "Ag110m"], ["Sb125", "Ba133", "Cs134", "Cs137", "Ce144", "Eu152", "Eu154", "Eu155", "<b>∑γ</b>"] ]
+
                         Column {
 
                             Repeater {
