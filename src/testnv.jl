@@ -10,9 +10,19 @@ function test_nv_gui(y::String, fmx_ind::Int32)
     y = genSettings.year[1]
   end
   fmx_ind += 1
-  __years__ = map(x -> parse(x), years)
-  append!(__years__, __years__[end]+1)
-	a, ∑Co60Eq, f, ɛ = calc_factors( decay_correction(nvdb, nuclide_names, __years__ ) |> nuclide_parts, __years__ )
+  if typeof(years) != Array{Int64,1}
+      __years__ = map(x -> parse(x), years)
+  else
+      __years__ = years
+  end
+
+  if genSettings.name == "Z01"
+      np = Z01_get(nvdb, __years__ ) |> nuclide_parts
+  else
+      append!(__years__, __years__[end]+1)
+      np = decay_correction(nvdb, nuclide_names, __years__ ) |> nuclide_parts
+  end
+  a, ∑Co60Eq, f, ɛ = np |> calc_factors
 
   if isempty(rel_nuclides3) # standard values
     rel_nuclides = ["Co60", "Cs137", "Fe55", "Ni63", "Sr90", "Am241"]
@@ -50,8 +60,8 @@ function test_nv_gui(y::String, fmx_ind::Int32)
       sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("NV||'-'||s_id") ) ) ]
       sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("NV||'-'||s_id") ) ) ]
   else
-      sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
-      sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) ) ]
+      sampleOverestimate = [Overestimate(name, ratio1[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) |> unique ) ]
+      sampleOverestimate_eoy = [Overestimate(name, ratio2[name, :].array ) for name in map(x->string(x), vec(get_sample_info("s_id") ) |> unique ) ]
   end
   sampleModel = ListModel(sampleOverestimate)
   sampleModel_eoy = ListModel(sampleOverestimate_eoy)

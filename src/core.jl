@@ -123,17 +123,18 @@ end
 
 # TODO make function more general
 function ListModel2NamedArray(lm::Array)
+	years = map(x -> string(x), get_years()[1:end-1])
 	if typeof(years) != Array{Int64,1}
-  		y = map(x -> parse(x), years)
+  		years = map(x -> parse(x), years)
 	end
 
-  n = Array{String}(length(lm))
-  arr = Array{Float64}(length(lm), length(y) )
-  for i = 1:length(lm)
-    arr[i,:] = lm[i].values'
-    n[i] = lm[i].name
-  end
-  return NamedArray(arr, (n, y), ("nuclides", "years"))
+	n = Array{String}(length(lm))
+  	arr = Array{Float64}(length(lm), length(years) )
+  	for i = 1:length(lm)
+    	arr[i,:] = lm[i].values'
+    	n[i] = lm[i].name
+  	end
+  	return NamedArray(arr, (n, years), ("nuclides", "years"))
 end
 
 # check for sanity
@@ -191,16 +192,15 @@ end
 
 # gather NV from DB to specific year
 function Z01_get(nvdb::SQLite.DB, year::Int64)
-
 	samples_raw = SQLite.query(nvdb, "select " * arr2str(nuclide_names)	* " from nv_data join nv_summary on nv_data.nv_id = nv_summary.nv_id where NV = 'Z01' and date = '01.01." * string(year) * "' ") |> fill_wzero
 
-	sample_id = get_sample_info("s_id", "Z01") |> vec
+	sample_id = get_sample_info("s_id", "Z01") |> vec |> unique
 	samples = NamedArray( get.(samples_raw), (sample_id, nuclide_names), ("samples", "nuclides"))
 end
 
 function Z01_get(nvdb::SQLite.DB, y::Array{Int64,1})
 # y = get_years()[1:end-1]
-	s = [Z01_get(nvdb::SQLite.DB, i) for i in y ]
+	s = [Z01_get(nvdb, i) for i in y ]
 	samples = NamedArray( Array{Float64}( size(s[1],1), size(s[1],2), length(y)),
 	 				(s[1].dicts[1].keys, nuclide_names, y ),
 					("samples", "nuclides", "year") )
