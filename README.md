@@ -1,5 +1,7 @@
 # NuclideVector
 
+DEPRECATED! A new version with much more features is ready but for now not public.
+
 julia-release (v0.6): [![Build Status](https://travis-ci.org/Ph0non/NuclideVector.svg?branch=master)](https://travis-ci.org/Ph0non/NuclideVector) [![Build status](https://ci.appveyor.com/api/projects/status/d97d0jnxrx9r50bn/branch/master?svg=true)](https://ci.appveyor.com/project/Ph0non/nuclidevector/branch/master) [![codecov](https://codecov.io/gh/Ph0non/NuclideVector/branch/master/graph/badge.svg)](https://codecov.io/gh/Ph0non/NuclideVector) 
 
 
